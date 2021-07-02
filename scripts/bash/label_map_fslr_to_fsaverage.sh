@@ -79,8 +79,8 @@ wb_command -label-resample "${right_atlas_gii}" "${right_fsLR32k_gii}" "${right_
 echo -e "${GREEN}[INFO]`date`:${NC} label-resample completed successfully"
 
 # convert spheres back to freesurfer native annot format
-left_native_atlas_fs="${fdir}/FreeSurfer/label/native.Q1-Q6_RelatedParcellation210.L.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.annot"
+left_native_atlas_fs="${fdir}/FreeSurfer/label/lh.native.glasser.annot"
 mris_convert --annot "${left_native_atlas_gii}" "${left_native_to_fsLR}" "${left_native_atlas_fs}"
-right_native_atlas_fs="${fdir}/FreeSurfer/label/native.Q1-Q6_RelatedParcellation210.R.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.annot"
+right_native_atlas_fs="${fdir}/FreeSurfer/label/rh.native.glasser.annot"
 mris_convert --annot "${right_native_atlas_gii}" "${right_native_to_fsLR}" "${right_native_atlas_fs}"
 echo -e "${GREEN}[INFO]`date`:${NC} labels converted back to annot"
