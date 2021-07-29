@@ -27,8 +27,8 @@ rh_white_surf = freesurfer.read_geometry('/home/sina/Documents/Research/Datasets
 #     2. A table for the color of each label (r, g, b, t, colortable array id)
 #     3. A list names of the lables
 
-lh_glasser_annot = freesurfer.read_annot('/home/sina/Documents/Research/Datasets/UK biobank/sample/1000094/FreeSurfer/label/lh.native.glasser.annot')
-rh_glasser_annot = freesurfer.read_annot('/home/sina/Documents/Research/Datasets/UK biobank/sample/1000094/FreeSurfer/label/rh.native.glasser.annot')
+lh_glasser_annot = freesurfer.read_annot('/home/sina/Documents/Research/Datasets/UK biobank/sample/1000094/FreeSurfer/label/lh.native.glasser.m2.annot')
+rh_glasser_annot = freesurfer.read_annot('/home/sina/Documents/Research/Datasets/UK biobank/sample/1000094/FreeSurfer/label/rh.native.glasser.m2.annot')
 
 
 # Finally we need to load the ribbon mask to use as a reference for voxels to be labeled (only label voxels in the cortical ribbon)
@@ -82,7 +82,7 @@ rh_kdtree = spatial.KDTree(rh_xyz)
 
 
 # create a copy of the ribbon label file to overwrite
-glasser_labels = (ribbon.get_fdata().copy() * 0).astype(np.uint)
+glasser_labels = (ribbon.get_fdata().copy() * 0).astype(float)
 
 # extract the indices of voxels in the cortical ribbon
 lh_cortex_ijk = np.array(np.where(ribbon.get_fdata() == label_id['Left-Cerebral-Cortex'])).T
@@ -107,7 +107,7 @@ glasser_labels[ribbon.get_fdata() == label_id['Right-Cerebral-Cortex']] = rh_gla
 # now write the label into an mgh freesurfer volumetric format
 img = nib.nifti1.Nifti1Image(
     glasser_labels,
-    ribbon.header.get_vox2ras(),
+    ribbon.header.get_vox2ras(),.m2
 )
 
 nib.save(
