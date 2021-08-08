@@ -10,10 +10,13 @@
 # https://github.com/Washington-University/HCPpipelines/tree/master/global/templates/standard_mesh_atlases
 # https://figshare.com/articles/dataset/HCP-MMP1_0_volumetric_NIfTI_masks_in_native_structural_space/4249400
 # https://cjneurolab.org/2016/11/22/hcp-mmp1-0-volumetric-nifti-masks-in-native-structural-space/
+# https://freesurfer.net/fswiki/mri_surf2surf
+# https://community.mrtrix.org/t/missing-nodes-in-parcellation-image/4387
 
 
 # Other considerations...
-# There are two atlas glasser files (parcellation, validation), the parcellation file is used in this code.
+# There are two atlas glasser files (parcellation, validation), the parcellation
+# file is used in this code.
 
 # some colors for fancy logging :D
 RED='\033[0;31m'
@@ -22,20 +25,34 @@ NC='\033[0m'
 
 echo -e "${GREEN}[INFO]`date`:${NC} Starting to map fsLR label to fsnative"
 
+# --------------------------------------------------------------------------------
+# Setting required variables
+# --------------------------------------------------------------------------------
+
 # files directory
 # modify this to refere to where the subject data is stored at
 # the ralative maps may need to be redefined to apply to UKB directory structure
-fdir='/home/sina/Documents/Research/Datasets/UK biobank/sample/1000094'
+
+main_dir=$1
+ukb_subjects_dir=$2
+ukb_subject_id=$3
+atlas_name=$4
+atlas_file=$5
+
+template_dir="${main_dir}/data/templates"
+temporary_dir="${main_dir}/data/temporary"
+
+fdir='${ukb_subjects_dir}/${ukb_subject_id}'
 gdir='/home/sina/Documents/Research/Datasets/UK biobank/sample/general'
 
 
 # convert glasser label files to label.gii format
-atlas_label="${gdir}/Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii"
-left_atlas_gii="${fdir}/tmp/Q1-Q6_RelatedParcellation210.L.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
-right_atlas_gii="${fdir}/tmp/Q1-Q6_RelatedParcellation210.R.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
+atlas_label="${template_dir}/atlases/${atlas_file}"
+left_atlas_gii="${temporary_dir}/${ukb_subject_id}/${atlas_name}.L.32k_fs_LR.label.gii"
+right_atlas_gii="${temporary_dir}/${ukb_subject_id}/${atlas_name}.R.32k_fs_LR.label.gii"
 wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_LEFT "${left_atlas_gii}"
 wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_RIGHT "${right_atlas_gii}"
-echo -e "${GREEN}[INFO]`date`:${NC} glasser label converted to gii"
+echo -e "${GREEN}[INFO]`date`:${NC} glasser label converted to cortical gii"
 
 
 # First approach:
