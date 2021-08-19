@@ -23,7 +23,6 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-echo -e "${GREEN}[INFO]`date`:${NC} Starting to map fsLR label to fsnative"
 
 # --------------------------------------------------------------------------------
 # Setting required variables
@@ -38,15 +37,15 @@ ukb_subjects_dir=$2
 ukb_subject_id=$3
 atlas_name=$4
 atlas_file=$5
-output_dir=$6
 
 template_dir="${main_dir}/data/templates"
 temporary_dir="${main_dir}/data/temporary"
 
 fsaverage_dir="${template_dir}/freesurfer/fsaverage"
 
-fdir='${ukb_subjects_dir}/${ukb_subject_id}'
-gdir='/home/sina/Documents/Research/Datasets/UK biobank/sample/general'
+echo -e "${GREEN}[INFO]`date`:${NC} Atlas: ${atlas_name}"
+echo -e "${GREEN}[INFO]`date`:${NC} Located at: ${atlas_file}"
+echo -e "${GREEN}[INFO]`date`:${NC} Starting to map fsLR label to fsnative"
 
 # --------------------------------------------------------------------------------
 # Convert glasser label files to label.gii format
@@ -139,26 +138,26 @@ echo -e "${GREEN}[INFO]`date`:${NC} Labels (fsaverage) converted to .annot forma
 # Resample fsaverage labels to native surfaces
 # --------------------------------------------------------------------------------
 
-if [ ! -d "${output_dir}/${ukb_subject_id}/atlases" ]; then
-	mkdir -p "${output_dir}/${ukb_subject_id}/atlases"
+if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}/atlases" ]; then
+	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}/atlases"
 fi
 
 # create symlink to fsaverage files
 ln -s "${fsaverage_dir}" "${ukb_subjects_dir}/${ukb_subject_id}/fsaverage164"
 
-cd "${ukb_subjects_dir}/${ukb_subject_id}"
+export SUBJECTS_DIR="${ukb_subjects_dir}/${ukb_subject_id}"
 
 # use mri_surf2surf to resample fsaverage to fsnative
-left_native_atlas_fs="${output_dir}/${ukb_subject_id}/atlases/lh.native.${atlas_name}.annot"
+left_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/lh.native.${atlas_name}.annot"
 if [ ! -f ${left_native_atlas_fs} ]; then
 	mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi lh --sval-annot "${left_fsaverage164_atlas_fs}" --tval "${left_native_atlas_fs}"
 fi
 
-right_native_atlas_fs="${output_dir}/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
+right_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
 if [ ! -f ${left_native_atlas_fs} ]; then
 	mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi rh --sval-annot "${right_fsaverage164_atlas_fs}" --tval "${right_native_atlas_fs}"
 fi
 
 echo -e "${GREEN}[INFO]`date`:${NC} Native atlas constructed from fsaverage."
-echo -e "${GREEN}[INFO]`date`:${NC} Check ${output_dir}/${ukb_subject_id}/atlases for outputs."
+echo -e "${GREEN}[INFO]`date`:${NC} Check ${temporary_dir}/subjects/${ukb_subject_id}/atlases for output."
 echo -e "${GREEN}[INFO]`date`:${NC} Surface label mapping (fsLR to fsnative) finished.."
