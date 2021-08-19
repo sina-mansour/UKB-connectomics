@@ -1,0 +1,8 @@
+# ignore notebook checkpoints
+.ipynb_checkpoints/
+
+# ignore the pycache
+__pycache__/
+
+# ignore temporary files
+/data/temporary/
