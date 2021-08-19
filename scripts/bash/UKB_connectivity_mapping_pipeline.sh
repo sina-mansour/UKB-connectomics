@@ -36,13 +36,13 @@ temporary_dir="${main_dir}/data/temporary"
 output_dir="${main_dir}/data/output"
 
 # create a directory to store temporary files
-if [ ! -d "${temporary_dir}/${ukb_subject_id}" ]; then
-	mkdir -p "${temporary_dir}/${ukb_subject_id}"
+if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}" ]; then
+	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}"
 fi
 
 # create a directory to store output files
-if [ ! -d "${output_dir}/${ukb_subject_id}" ]; then
-	mkdir -p "${output_dir}/${ukb_subject_id}"
+if [ ! -d "${output_dir}/subjects/${ukb_subject_id}" ]; then
+	mkdir -p "${output_dir}/subjects/${ukb_subject_id}"
 fi
 
 # --------------------------------------------------------------------------------

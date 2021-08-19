@@ -154,7 +154,7 @@ if [ ! -f ${left_native_atlas_fs} ]; then
 fi
 
 right_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
-if [ ! -f ${left_native_atlas_fs} ]; then
+if [ ! -f ${right_native_atlas_fs} ]; then
 	mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi rh --sval-annot "${right_fsaverage164_atlas_fs}" --tval "${right_native_atlas_fs}"
 fi
 
