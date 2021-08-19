@@ -38,130 +38,127 @@ ukb_subjects_dir=$2
 ukb_subject_id=$3
 atlas_name=$4
 atlas_file=$5
+output_dir=$6
 
 template_dir="${main_dir}/data/templates"
 temporary_dir="${main_dir}/data/temporary"
 
+fsaverage_dir="${template_dir}/freesurfer/fsaverage"
+
 fdir='${ukb_subjects_dir}/${ukb_subject_id}'
 gdir='/home/sina/Documents/Research/Datasets/UK biobank/sample/general'
 
+# --------------------------------------------------------------------------------
+# Convert glasser label files to label.gii format
+# --------------------------------------------------------------------------------
 
-# convert glasser label files to label.gii format
 atlas_label="${template_dir}/atlases/${atlas_file}"
-left_atlas_gii="${temporary_dir}/${ukb_subject_id}/${atlas_name}.L.32k_fs_LR.label.gii"
-right_atlas_gii="${temporary_dir}/${ukb_subject_id}/${atlas_name}.R.32k_fs_LR.label.gii"
-wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_LEFT "${left_atlas_gii}"
-wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_RIGHT "${right_atlas_gii}"
-echo -e "${GREEN}[INFO]`date`:${NC} glasser label converted to cortical gii"
 
+if [ ! -d "${temporary_dir}/templates/atlases" ]; then
+	mkdir -p "${temporary_dir}/templates/atlases"
+fi
 
-# First approach:
-# The commented script bellow directly mapped the atlas from fsLR space to fsNative
-# While this first attemp was rather successful compared to previous volumetric approaches
-# It had some imperfections (mainly mapping some regions to the medial wall)
-# Hence it was replaced by a script that first maps from fsLR to fsaverage, and then
-# from fsaverage to fsnative.
-# check logged image: ./logs/images/problem_mapping_fsLR_to_fsnative.png
+left_atlas_gii="${temporary_dir}/templates/atlases/${atlas_name}.L.32k_fs_LR.label.gii"
+if [ ! -f ${left_atlas_gii} ]; then
+	wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_LEFT "${left_atlas_gii}"
+fi
 
+right_atlas_gii="${temporary_dir}/templates/atlases/${atlas_name}.R.32k_fs_LR.label.gii"
+if [ ! -f ${right_atlas_gii} ]; then
+	wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_RIGHT "${right_atlas_gii}"
+fi
 
-# convert fresurfer native spheres to surf.gii format
-# left_native_sphere_fs="${fdir}/FreeSurfer/surf/lh.sphere"
-# left_native_sphere_gii="${fdir}/tmp/lh.sphere.surf.gii"
-# mris_convert "${left_native_sphere_fs}" "${left_native_sphere_gii}"
-# right_native_sphere_fs="${fdir}/FreeSurfer/surf/rh.sphere"
-# right_native_sphere_gii="${fdir}/tmp/rh.sphere.surf.gii"
-# mris_convert "${right_native_sphere_fs}" "${right_native_sphere_gii}"
-# echo -e "${GREEN}[INFO]`date`:${NC} native spheres converted to gii"
+echo -e "${GREEN}[INFO]`date`:${NC} Atlas converted to .gii format."
 
-# # sanity check by conversion of fresurfer native pial to surf.gii format
-# left_native_pial_fs="${fdir}/FreeSurfer/surf/lh.pial"
-# left_native_pial_gii="${fdir}/tmp/lh.pial.surf.gii"
-# mris_convert "${left_native_pial_fs}" "${left_native_pial_gii}"
-# right_native_pial_fs="${fdir}/FreeSurfer/surf/rh.pial"
-# right_native_pial_gii="${fdir}/tmp/rh.pial.surf.gii"
-# mris_convert "${right_native_pial_fs}" "${right_native_pial_gii}"
-# echo -e "${GREEN}[INFO]`date`:${NC} native pials converted to gii"
+# --------------------------------------------------------------------------------
+# Convert fsaverage spheres to .gii format
+# --------------------------------------------------------------------------------
 
+left_fsaverage_sphere_fs="${fsaverage_dir}/surf/lh.sphere"
+right_fsaverage_sphere_fs="${fsaverage_dir}/surf/rh.sphere"
 
-# # surface-sphere-project-unproject
-# # used to map the native fsaverage space to the fsLR space before resampling
-# left_fsavg_164k="${gdir}/fsaverage.L.sphere.164k_fs_L.surf.gii"
-# left_fsavg_164k_to_fsLR="${gdir}/fs_L-to-fs_LR_fsaverage.L_LR.spherical_std.164k_fs_L.surf.gii"
-# left_native_to_fsLR="${fdir}/tmp/lh.sphere.fs_L-to-fs_LR_native.L_LR.spherical_std.native_fs_L.surf.gii"
-# wb_command -surface-sphere-project-unproject "${left_native_sphere_gii}" "${left_fsavg_164k}" "${left_fsavg_164k_to_fsLR}" "${left_native_to_fsLR}"
-# right_fsavg_164k="${gdir}/fsaverage.R.sphere.164k_fs_R.surf.gii"
-# right_fsavg_164k_to_fsLR="${gdir}/fs_R-to-fs_LR_fsaverage.R_LR.spherical_std.164k_fs_R.surf.gii"
-# right_native_to_fsLR="${fdir}/tmp/rh.sphere.fs_R-to-fs_LR_native.R_LR.spherical_std.native_fs_R.surf.gii"
-# wb_command -surface-sphere-project-unproject "${right_native_sphere_gii}" "${right_fsavg_164k}" "${right_fsavg_164k_to_fsLR}" "${right_native_to_fsLR}"
-# echo -e "${GREEN}[INFO]`date`:${NC} surface-sphere-project-unproject completed successfully"
+if [ ! -d "${temporary_dir}/surf" ]; then
+	mkdir -p "${temporary_dir}/surf"
+fi
 
+left_fsaverage_sphere_gii="${temporary_dir}/surf/lh.sphere.fsaverage.surf.gii"
+if [ ! -f ${left_fsaverage_sphere_gii} ]; then
+	mris_convert "${left_fsaverage_sphere_fs}" "${left_fsaverage_sphere_gii}"
+fi
 
-# # label-resample
-# # used to resample the original atlas in fs-LR to the native surface
-# left_fsLR32k_gii="${gdir}/L.sphere.32k_fs_LR.surf.gii"
-# left_native_atlas_gii="${fdir}/tmp/native.Q1-Q6_RelatedParcellation210.L.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
-# wb_command -label-resample "${left_atlas_gii}" "${left_fsLR32k_gii}" "${left_native_to_fsLR}" BARYCENTRIC "${left_native_atlas_gii}"
-# right_fsLR32k_gii="${gdir}/R.sphere.32k_fs_LR.surf.gii"
-# right_native_atlas_gii="${fdir}/tmp/native.Q1-Q6_RelatedParcellation210.R.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
-# wb_command -label-resample "${right_atlas_gii}" "${right_fsLR32k_gii}" "${right_native_to_fsLR}" BARYCENTRIC "${right_native_atlas_gii}"
-# echo -e "${GREEN}[INFO]`date`:${NC} label-resample completed successfully"
+right_fsaverage_sphere_gii="${temporary_dir}/surf/rh.sphere.fsaverage.surf.gii"
+if [ ! -f ${right_fsaverage_sphere_gii} ]; then
+	mris_convert "${right_fsaverage_sphere_fs}" "${right_fsaverage_sphere_gii}"
+fi
 
-# # convert spheres back to freesurfer native annot format
-# left_native_atlas_fs="${fdir}/FreeSurfer/label/lh.native.glasser.annot"
-# mris_convert --annot "${left_native_atlas_gii}" "${left_native_to_fsLR}" "${left_native_atlas_fs}"
-# right_native_atlas_fs="${fdir}/FreeSurfer/label/rh.native.glasser.annot"
-# mris_convert --annot "${right_native_atlas_gii}" "${right_native_to_fsLR}" "${right_native_atlas_fs}"
-# echo -e "${GREEN}[INFO]`date`:${NC} labels converted back to annot"
+echo -e "${GREEN}[INFO]`date`:${NC} The fsaverage spheres converted to .gii format."
 
-# Second approach:
+# --------------------------------------------------------------------------------
+# Resample atlas labels from fsLR to fsaverage
+# --------------------------------------------------------------------------------
 
-# first map from fsLR to fsaverage
+if [ ! -d "${temporary_dir}/atlases" ]; then
+	mkdir -p "${temporary_dir}/atlases"
+fi
 
-# convert fsaverage spheres to surf.gii format
-left_fsaverage_sphere_fs="${gdir}/fsaverage/surf/lh.sphere"
-left_fsaverage_sphere_gii="${fdir}/tmp/lh.sphere.fsaverage.surf.gii"
-mris_convert "${left_fsaverage_sphere_fs}" "${left_fsaverage_sphere_gii}"
-right_fsaverage_sphere_fs="${gdir}/fsaverage/surf/rh.sphere"
-right_fsaverage_sphere_gii="${fdir}/tmp/rh.sphere.fsaverage.surf.gii"
-mris_convert "${right_fsaverage_sphere_fs}" "${right_fsaverage_sphere_gii}"
-echo -e "${GREEN}[INFO]`date`:${NC} fsaverage spheres converted to gii"
+left_fsLR32k_gii="${template_dir}/surfaces/L.sphere.32k_fs_LR.surf.gii"
+right_fsLR32k_gii="${template_dir}/surfaces/R.sphere.32k_fs_LR.surf.gii"
 
-# sanity check by conversion of fresurfer fsaverage pial to surf.gii format
-left_fsaverage_pial_fs="${gdir}/fsaverage/surf/lh.pial"
-left_fsaverage_pial_gii="${fdir}/tmp/lh.pial.fsaverage.surf.gii"
-mris_convert "${left_fsaverage_pial_fs}" "${left_fsaverage_pial_gii}"
-right_fsaverage_pial_fs="${gdir}/fsaverage/surf/rh.pial"
-right_fsaverage_pial_gii="${fdir}/tmp/rh.pial.fsaverage.surf.gii"
-mris_convert "${right_fsaverage_pial_fs}" "${right_fsaverage_pial_gii}"
-echo -e "${GREEN}[INFO]`date`:${NC} fsaverage pials converted to gii"
+left_fsLR_to_fsaverage164="${template_dir}/surfaces/fs_L-to-fs_LR_fsaverage.L_LR.spherical_std.164k_fs_L.surf.gii"
+right_fsLR_to_fsaverage164="${template_dir}/surfaces/fs_R-to-fs_LR_fsaverage.R_LR.spherical_std.164k_fs_R.surf.gii"
 
-# label-resample
-# used to resample the original atlas in fs-LR to the fsaverage surface
-left_fsLR32k_gii="${gdir}/L.sphere.32k_fs_LR.surf.gii"
-left_fsaverage164_to_fsLR="${gdir}/fs_L-to-fs_LR_fsaverage.L_LR.spherical_std.164k_fs_L.surf.gii"
-left_fsaverage164_atlas_gii="${fdir}/tmp/fsaverage164.Q1-Q6_RelatedParcellation210.L.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
-wb_command -label-resample "${left_atlas_gii}" "${left_fsLR32k_gii}" "${left_fsaverage164_to_fsLR}" BARYCENTRIC "${left_fsaverage164_atlas_gii}"
-right_fsLR32k_gii="${gdir}/R.sphere.32k_fs_LR.surf.gii"
-right_fsaverage164_to_fsLR="${gdir}/fs_R-to-fs_LR_fsaverage.R_LR.spherical_std.164k_fs_R.surf.gii"
-right_fsaverage164_atlas_gii="${fdir}/tmp/fsaverage164.Q1-Q6_RelatedParcellation210.R.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.label.gii"
-wb_command -label-resample "${right_atlas_gii}" "${right_fsLR32k_gii}" "${right_fsaverage164_to_fsLR}" BARYCENTRIC "${right_fsaverage164_atlas_gii}"
-echo -e "${GREEN}[INFO]`date`:${NC} label-resample completed successfully"
+left_fsaverage164_atlas_gii="${temporary_dir}/atlases/fsaverage164.L.${atlas_name}.label.gii"
+if [ ! -f ${left_fsaverage164_atlas_gii} ]; then
+	wb_command -label-resample "${left_atlas_gii}" "${left_fsLR32k_gii}" "${left_fsLR_to_fsaverage164}" BARYCENTRIC "${left_fsaverage164_atlas_gii}"
+fi
 
-# convert labels back to freesurfer annot format
-left_fsaverage164_atlas_fs="${fdir}/tmp/lh.fsaverage164.glasser.annot"
-mris_convert --annot "${left_fsaverage164_atlas_gii}" "${left_fsaverage164_to_fsLR}" "${left_fsaverage164_atlas_fs}"
-right_fsaverage164_atlas_fs="${fdir}/tmp/rh.fsaverage164.glasser.annot"
-mris_convert --annot "${right_fsaverage164_atlas_gii}" "${right_fsaverage164_to_fsLR}" "${right_fsaverage164_atlas_fs}"
-echo -e "${GREEN}[INFO]`date`:${NC} labels converted back to annot"
+right_fsaverage164_atlas_gii="${temporary_dir}/atlases/fsaverage164.R.${atlas_name}.label.gii"
+if [ ! -f ${right_fsaverage164_atlas_gii} ]; then
+	wb_command -label-resample "${right_atlas_gii}" "${right_fsLR32k_gii}" "${right_fsLR_to_fsaverage164}" BARYCENTRIC "${right_fsaverage164_atlas_gii}"
+fi
 
+echo -e "${GREEN}[INFO]`date`:${NC} Atlas resampled to fsaverage surface."
 
-# now try converting fsaverage labels to native surface
+# --------------------------------------------------------------------------------
+# Convert fsaverage atlas to annot format
+# --------------------------------------------------------------------------------
+
+left_fsaverage164_atlas_fs="${temporary_dir}/atlases/lh.fsaverage164.${atlas_name}.annot"
+if [ ! -f ${left_fsaverage164_atlas_fs} ]; then
+	mris_convert --annot "${left_fsaverage164_atlas_gii}" "${left_fsLR_to_fsaverage164}" "${left_fsaverage164_atlas_fs}"
+fi
+
+right_fsaverage164_atlas_fs="${temporary_dir}/atlases/rh.fsaverage164.${atlas_name}.annot"
+if [ ! -f ${right_fsaverage164_atlas_fs} ]; then
+	mris_convert --annot "${right_fsaverage164_atlas_gii}" "${right_fsLR_to_fsaverage164}" "${right_fsaverage164_atlas_fs}"
+fi
+
+echo -e "${GREEN}[INFO]`date`:${NC} Labels (fsaverage) converted to .annot format."
+
+# --------------------------------------------------------------------------------
+# Resample fsaverage labels to native surfaces
+# --------------------------------------------------------------------------------
+
+if [ ! -d "${output_dir}/${ukb_subject_id}/atlases" ]; then
+	mkdir -p "${output_dir}/${ukb_subject_id}/atlases"
+fi
 
 # create symlink to fsaverage files
-ln -s "${gdir}/fsaverage" "${fdir}/fsaverage164"
+ln -s "${fsaverage_dir}" "${ukb_subjects_dir}/${ukb_subject_id}/fsaverage164"
 
-# use mri_surf2surf
-left_native_atlas_fs="${fdir}/FreeSurfer/label/lh.native.glasser.m2.annot"
-right_native_atlas_fs="${fdir}/FreeSurfer/label/rh.native.glasser.m2.annot"
-mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi lh --sval-annot "${left_fsaverage164_atlas_fs}" --tval "${left_native_atlas_fs}"
-mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi rh --sval-annot "${right_fsaverage164_atlas_fs}" --tval "${right_native_atlas_fs}"
+cd "${ukb_subjects_dir}/${ukb_subject_id}"
+
+# use mri_surf2surf to resample fsaverage to fsnative
+left_native_atlas_fs="${output_dir}/${ukb_subject_id}/atlases/lh.native.${atlas_name}.annot"
+if [ ! -f ${left_native_atlas_fs} ]; then
+	mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi lh --sval-annot "${left_fsaverage164_atlas_fs}" --tval "${left_native_atlas_fs}"
+fi
+
+right_native_atlas_fs="${output_dir}/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
+if [ ! -f ${left_native_atlas_fs} ]; then
+	mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi rh --sval-annot "${right_fsaverage164_atlas_fs}" --tval "${right_native_atlas_fs}"
+fi
+
+echo -e "${GREEN}[INFO]`date`:${NC} Native atlas constructed from fsaverage."
+echo -e "${GREEN}[INFO]`date`:${NC} Check ${output_dir}/${ukb_subject_id}/atlases for outputs."
+echo -e "${GREEN}[INFO]`date`:${NC} Surface label mapping (fsLR to fsnative) finished.."
