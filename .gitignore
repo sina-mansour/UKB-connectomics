@@ -6,3 +6,6 @@ __pycache__/
 
 # ignore temporary files
 /data/temporary/
+
+# ignore fsaverage freesurfer files
+/data/templates/freesurfer/fsaverage/
