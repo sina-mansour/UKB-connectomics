@@ -21,6 +21,9 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
+# # loading required packages on spartan
+# module load Python/3.6.4-intel-2017.u2
+# source venv/bin/activate
 
 # --------------------------------------------------------------------------------
 # Setting required variables
@@ -52,10 +55,8 @@ fi
 atlases=(
 	# Glasser
 	"Glasser,Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii"
-	# Gordon
-	"Gordon,Gordon333.32k_fs_LR.dlabel.nii"
 	# # Schaefer 7Networks
-	# "Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.dlabel.nii"
 	# "Schaefer7n200p,Schaefer2018_200Parcels_7Networks_order.dlabel.nii"
 	# "Schaefer7n300p,Schaefer2018_300Parcels_7Networks_order.dlabel.nii"
 	# "Schaefer7n400p,Schaefer2018_400Parcels_7Networks_order.dlabel.nii"
@@ -89,7 +90,7 @@ atlases=(
 # Generate native volumetric atlases
 # --------------------------------------------------------------------------------
 
-echo -e "${GREEN}[INFO]`date`:${NC} Mapping surface atlases to native space."
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping surface atlases to native surface space."
 
 # copy files from fsaverage space
 if [ ! -d "${template_dir}/freesurfer/fsaverage" ]; then
@@ -107,7 +108,20 @@ for atlas in ${atlases[@]}; do
 	"${script_dir}/bash/label_map_fslr_to_fsaverage.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}" "${atlas_file}"
 done
 
-echo -e "${GREEN}[INFO]`date`:${NC} Completed mapping surface atlases to native space."
+echo -e "${GREEN}[INFO]`date`:${NC} Completed mapping surface atlases to native surface space."
+
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping native surface atlases to native volume."
+
+# map all surface atlases to native volume
+for atlas in ${atlases[@]}; do
+	IFS=',' read -a atlas_info <<< "${atlas}"
+	atlas_name=${atlas_info[0]}
+	atlas_file=${atlas_info[1]}
+
+	# use the python code to map surface labels to native volume
+	python3 "${script_dir}/python/map_surface_label_to_volume.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+done
+
 
 # To be continued...
 
@@ -124,3 +138,5 @@ echo -e "${GREEN}[INFO]`date`:${NC} Completed mapping surface atlases to native 
 # --------------------------------------------------------------------------------
 
 # To be written...
+
+# deactivate
