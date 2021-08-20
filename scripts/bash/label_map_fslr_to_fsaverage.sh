@@ -143,7 +143,9 @@ if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}/atlases" ]; then
 fi
 
 # create symlink to fsaverage files
-ln -s "${fsaverage_dir}" "${ukb_subjects_dir}/${ukb_subject_id}/fsaverage164"
+if [ ! -e "${ukb_subjects_dir}/${ukb_subject_id}/fsaverage164" ]; then
+	ln -s "${fsaverage_dir}" "${ukb_subjects_dir}/${ukb_subject_id}/fsaverage164"
+fi
 
 export SUBJECTS_DIR="${ukb_subjects_dir}/${ukb_subject_id}"
 
