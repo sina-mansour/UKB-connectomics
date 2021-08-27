@@ -193,6 +193,25 @@ done
 # Map functional time-series
 # --------------------------------------------------------------------------------
 
+# Step 1: map fMRI for cortical atlases
+
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on cortical atlases."
+
+# map all surface atlases to native volume
+for atlas in ${atlases[@]}; do
+	IFS=',' read -a atlas_info <<< "${atlas}"
+	atlas_name=${atlas_info[0]}
+	atlas_file=${atlas_info[1]}
+
+	echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on ${atlas_name} atlas."
+
+	# use the python code to map fMRI time-series onto cortical atlases
+	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.${atlas_name}.csv.gz"
+	if [ ! -f ${fMRI_data} ]; then
+		python3 "${script_dir}/python/compute_cortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+	fi
+done
+
 # To be written...
 
 
