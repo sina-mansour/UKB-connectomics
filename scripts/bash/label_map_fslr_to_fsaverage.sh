@@ -53,16 +53,16 @@ echo -e "${GREEN}[INFO]`date`:${NC} Starting to map fsLR label to fsnative"
 
 atlas_label="${template_dir}/atlases/${atlas_file}"
 
-if [ ! -d "${temporary_dir}/templates/atlases" ]; then
-	mkdir -p "${temporary_dir}/templates/atlases"
+if [ ! -d "${temporary_dir}/atlases" ]; then
+	mkdir -p "${temporary_dir}/atlases"
 fi
 
-left_atlas_gii="${temporary_dir}/templates/atlases/${atlas_name}.L.32k_fs_LR.label.gii"
+left_atlas_gii="${temporary_dir}/atlases/${atlas_name}.L.32k_fs_LR.label.gii"
 if [ ! -f ${left_atlas_gii} ]; then
 	wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_LEFT "${left_atlas_gii}"
 fi
 
-right_atlas_gii="${temporary_dir}/templates/atlases/${atlas_name}.R.32k_fs_LR.label.gii"
+right_atlas_gii="${temporary_dir}/atlases/${atlas_name}.R.32k_fs_LR.label.gii"
 if [ ! -f ${right_atlas_gii} ]; then
 	wb_command -cifti-separate "${atlas_label}" COLUMN -label CORTEX_RIGHT "${right_atlas_gii}"
 fi
