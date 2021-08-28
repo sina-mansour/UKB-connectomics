@@ -20,45 +20,41 @@ if __name__ == '__main__':
     temporary_dir = "{}/data/temporary".format(main_dir)
     output_dir = "{}/data/output".format(main_dir)
 
-    # load the volumetric atlas
-    cortical_atlas = nib.load('{}/subjects/{}/atlases/native.fMRI_space.{}.nii.gz'.format(temporary_dir, ukb_subject_id, atlas_name))
+    # load the subcortical atlas from file
+    subcortical_atlas = nib.load('{}/subjects/{}/atlases/native.fMRI_space.{}.nii.gz'.format(temporary_dir, ukb_subject_id, atlas_name))
 
-    # load names of all labels from the color lookup table
-    cortical_labels = pd.DataFrame(
-        np.genfromtxt(
-            '{}/subjects/{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, atlas_name),
+    # load the atlas label names from txt file
+    subcortical_labels = pd.DataFrame(
+        ['???'] + list(np.genfromtxt(
+            '{}/atlases/{}_label.txt'.format(template_dir, atlas_name),
             dtype='str'
-        ),
-        columns=['index', 'label_name', 'R', 'G', 'B', 'A'],
+        )),
+        columns=['label_name'],
     ).astype(
         dtype={
-            "index": "int",
             "label_name": "str",
-            "R": "int",
-            "G": "int",
-            "B": "int",
-            "A": "int",
         }
     )
+    subcortical_labels['index'] = subcortical_labels.index
 
     # load the ica clean fMRI
     clean_fmri = nib.load('{}/{}/fMRI/rfMRI.ica/filtered_func_data_clean.nii.gz'.format(ukb_subjects_dir, ukb_subject_id))
 
-    # extract label names
-    cortical_atlas_fmri = cortical_labels[['index', 'label_name']][cortical_labels['label_name'] != '???'].copy()
+    # extract label names, excluding ???
+    subcortical_atlas_fmri = subcortical_labels[['index', 'label_name']][subcortical_labels['label_name'] != '???'].copy()
 
     # Here, we'll average fmri signal over every label from atlas
-    cortical_atlas_fmri = pd.concat(
+    subcortical_atlas_fmri = pd.concat(
         [
-            cortical_atlas_fmri['label_name'],
+            subcortical_atlas_fmri,
             pd.DataFrame(
                 np.array(
                     [
-                        np.mean(clean_fmri.get_fdata()[cortical_atlas.get_fdata() == x['index']], axis=0)
-                        for (i, x) in cortical_atlas_fmri.iterrows()
+                        np.mean(clean_fmri.get_fdata()[subcortical_atlas.get_fdata() == x['index']], axis=0)
+                        for (i, x) in subcortical_atlas_fmri.iterrows()
                     ]
                 ),
-                index=cortical_atlas_fmri.index,
+                index=subcortical_atlas_fmri.index,
                 columns=['timepoint_{}'.format(x) for x in range(clean_fmri.shape[-1])],
             )
         ],
@@ -66,7 +62,7 @@ if __name__ == '__main__':
     )
 
     # write out the resulting time-series in a csv
-    cortical_atlas_fmri.to_csv(
+    subcortical_atlas_fmri.to_csv(
         ensure_dir('{}/subjects/{}/fMRI/fMRI.{}.csv.gz'.format(temporary_dir, ukb_subject_id, atlas_name)),
         index=False
     )
