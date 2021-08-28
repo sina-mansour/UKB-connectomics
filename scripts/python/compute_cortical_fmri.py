@@ -5,8 +5,6 @@ import sys
 import numpy as np
 import pandas as pd
 import nibabel as nib
-from scipy import spatial
-from nibabel import freesurfer
 
 
 def ensure_dir(file_name):
