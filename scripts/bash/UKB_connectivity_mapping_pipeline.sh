@@ -188,6 +188,8 @@ for atlas in ${subcortical_atlases[@]}; do
 	fi
 done
 
+echo -e "${GREEN}[INFO]`date`:${NC} All native volumetric atlases generated."
+
 
 # --------------------------------------------------------------------------------
 # Map functional time-series
@@ -212,7 +214,36 @@ for atlas in ${atlases[@]}; do
 	fi
 done
 
-# To be written...
+# Step 2: map fMRI for subcortical atlases
+
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on subcortical atlases."
+
+# map all surface atlases to native volume
+for atlas in ${subcortical_atlases[@]}; do
+	IFS=',' read -a atlas_info <<< "${atlas}"
+	atlas_name=${atlas_info[0]}
+	atlas_file=${atlas_info[1]}
+
+	echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on ${atlas_name} atlas."
+
+	# use the python code to map fMRI time-series onto cortical atlases
+	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.${atlas_name}.csv.gz"
+	if [ ! -f ${fMRI_data} ]; then
+		python3 "${script_dir}/python/compute_subcortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+	fi
+done
+
+# Step 3: map fMRI for global signal
+
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI for global signal."
+
+# use the python code to map fMRI time-series onto cortical atlases
+global_signal_fmri="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.global_signal.csv.gz"
+if [ ! -f ${global_signal_fmri} ]; then
+	python3 "${script_dir}/python/compute_global_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}"
+fi
+
+echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
 
 
 # --------------------------------------------------------------------------------
