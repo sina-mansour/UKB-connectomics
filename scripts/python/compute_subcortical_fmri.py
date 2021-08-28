@@ -46,7 +46,7 @@ if __name__ == '__main__':
     # Here, we'll average fmri signal over every label from atlas
     subcortical_atlas_fmri = pd.concat(
         [
-            subcortical_atlas_fmri,
+            subcortical_atlas_fmri['label_name'],
             pd.DataFrame(
                 np.array(
                     [
