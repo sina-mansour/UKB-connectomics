@@ -59,35 +59,35 @@ fi
 atlases=(
 	# Glasser
 	"Glasser,Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii"
-	# # Schaefer 7Networks
+	# Schaefer 7Networks
 	"Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n200p,Schaefer2018_200Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n300p,Schaefer2018_300Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n400p,Schaefer2018_400Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n500p,Schaefer2018_500Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n600p,Schaefer2018_600Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n700p,Schaefer2018_700Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n800p,Schaefer2018_800Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n900p,Schaefer2018_900Parcels_7Networks_order.dlabel.nii"
-	# "Schaefer7n1000p,Schaefer2018_1000Parcels_7Networks_order.dlabel.nii"
-	# # Schaefer 17Networks
-	# "Schaefer17n100p,Schaefer2018_100Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n200p,Schaefer2018_200Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n300p,Schaefer2018_300Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n400p,Schaefer2018_400Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n500p,Schaefer2018_500Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n600p,Schaefer2018_600Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n700p,Schaefer2018_700Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n800p,Schaefer2018_800Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n900p,Schaefer2018_900Parcels_17Networks_order.dlabel.nii"
-	# "Schaefer17n1000p,Schaefer2018_1000Parcels_17Networks_order.dlabel.nii"
+	"Schaefer7n200p,Schaefer2018_200Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n300p,Schaefer2018_300Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n400p,Schaefer2018_400Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n500p,Schaefer2018_500Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n600p,Schaefer2018_600Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n700p,Schaefer2018_700Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n800p,Schaefer2018_800Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n900p,Schaefer2018_900Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n1000p,Schaefer2018_1000Parcels_7Networks_order.dlabel.nii"
+	# Schaefer 17Networks
+	"Schaefer17n100p,Schaefer2018_100Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n200p,Schaefer2018_200Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n300p,Schaefer2018_300Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n400p,Schaefer2018_400Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n500p,Schaefer2018_500Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n600p,Schaefer2018_600Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n700p,Schaefer2018_700Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n800p,Schaefer2018_800Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n900p,Schaefer2018_900Parcels_17Networks_order.dlabel.nii"
+	"Schaefer17n1000p,Schaefer2018_1000Parcels_17Networks_order.dlabel.nii"
 )
 
 subcortical_atlases=(
 	# Melbourne Subcortex Atlas
-	# "Tian_Subcortex_S1_3T,Tian_Subcortex_S1_3T.nii.gz"
-	# "Tian_Subcortex_S2_3T,Tian_Subcortex_S2_3T.nii.gz"
-	# "Tian_Subcortex_S3_3T,Tian_Subcortex_S3_3T.nii.gz"
+	"Tian_Subcortex_S1_3T,Tian_Subcortex_S1_3T.nii.gz"
+	"Tian_Subcortex_S2_3T,Tian_Subcortex_S2_3T.nii.gz"
+	"Tian_Subcortex_S3_3T,Tian_Subcortex_S3_3T.nii.gz"
 	"Tian_Subcortex_S4_3T,Tian_Subcortex_S4_3T.nii.gz"
 )
 

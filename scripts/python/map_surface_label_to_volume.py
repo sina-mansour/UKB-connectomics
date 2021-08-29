@@ -2,6 +2,8 @@
 
 import os
 import sys
+import time
+import datetime
 import numpy as np
 import pandas as pd
 import nibabel as nib
@@ -12,6 +14,15 @@ from nibabel import freesurfer
 def ensure_dir(file_name):
     os.makedirs(os.path.dirname(file_name), exist_ok=True)
     return file_name
+
+
+def time_str(mode='abs', base=None):
+    if mode == 'rel':
+        return str(datetime.timedelta(seconds=(time.time() - base)))
+    if mode == 'raw':
+        return time.time()
+    if mode == 'abs':
+        return time.asctime(time.localtime(time.time()))
 
 
 if __name__ == '__main__':
@@ -43,6 +54,12 @@ if __name__ == '__main__':
 
     lh_atlas_annot = freesurfer.read_annot('{}/subjects/{}/atlases/lh.native.{}.annot'.format(temporary_dir, ukb_subject_id, atlas_name))
     rh_atlas_annot = freesurfer.read_annot('{}/subjects/{}/atlases/rh.native.{}.annot'.format(temporary_dir, ukb_subject_id, atlas_name))
+
+    print('{}: \033[0;32m[INFO]\033[0m There are {} unique labels in surface atlas: {} (including ???)'.format(
+        time_str(),
+        len(np.unique(np.concatenate([lh_atlas_annot[0], rh_atlas_annot[0]]))),
+        atlas_name)
+    )
 
     # Finally we need to load the ribbon mask to use as a reference for voxels to be labeled (only label voxels in the cortical ribbon)
     #
@@ -109,7 +126,9 @@ if __name__ == '__main__':
     atlas_labels[ribbon.get_fdata() == label_id['Left-Cerebral-Cortex']] = lh_atlas_annot[0][lh_index_surf]
     atlas_labels[ribbon.get_fdata() == label_id['Right-Cerebral-Cortex']] = rh_atlas_annot[0][rh_index_surf]
 
-    # now write the label into an mgh freesurfer volumetric format
+    print('{}: \033[0;32m[INFO]\033[0m There are {} unique labels in volumetric atlas: {} (including ???)'.format(time_str(), len(np.unique(atlas_labels)), atlas_name))
+
+    # now write the label into a volumetric format
     img = nib.nifti1.Nifti1Image(
         atlas_labels,
         ribbon.header.get_vox2ras(),
