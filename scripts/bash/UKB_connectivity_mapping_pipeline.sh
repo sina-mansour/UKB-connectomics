@@ -35,22 +35,14 @@ NC='\033[0m'
 
 main_dir=$1
 ukb_subjects_dir=$2
-ukb_subject_id=$3
+line_number=$3
+
+working_dir=`pwd`
 
 script_dir="${main_dir}/scripts"
 template_dir="${main_dir}/data/templates"
 temporary_dir="${main_dir}/data/temporary"
 output_dir="${main_dir}/data/output"
-
-# create a directory to store temporary files
-if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}" ]; then
-	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}"
-fi
-
-# create a directory to store output files
-if [ ! -d "${output_dir}/subjects/${ukb_subject_id}" ]; then
-	mkdir -p "${output_dir}/subjects/${ukb_subject_id}"
-fi
 
 # --------------------------------------------------------------------------------
 # List of all atlases
@@ -95,7 +87,96 @@ subcortical_atlases=(
 # Download subject data
 # --------------------------------------------------------------------------------
 
+# read the subject information from the combined bulk file
+subject_instance=(`sed "${line_number}q;d" "${temporary_dir}/bulk/dwi,rsfc,surf,t1.combined"`)
+
+ukb_subject_id=${subject_instance[0]}
+ukb_instance=${subject_instance[1]}
+
+echo -e "${GREEN}[INFO]`date`:${NC} Downloading required files (subject:${ukb_subject_id}, instance:${ukb_instance})."
+
+# create a directory to store downloaded files
+if [ ! -d "${ukb_subjects_dir}/${ukb_subject_id}" ]; then
+	mkdir -p "${ukb_subjects_dir}/${ukb_subject_id}"
+fi
+
+# create a directory to store temporary files
+if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}" ]; then
+	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}"
+fi
+
+# create a directory to store output files
+if [ ! -d "${output_dir}/subjects/${ukb_subject_id}" ]; then
+	mkdir -p "${output_dir}/subjects/${ukb_subject_id}"
+fi
+
+# create a batch download file to get all imaging data for the subject and instance
+rsfc_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20227_${ukb_instance}.zip"
+dwi_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20250_${ukb_instance}.zip"
+t1_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20252_${ukb_instance}.zip"
+surf_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20263_${ukb_instance}.zip"
+if [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f ${surf_zip} ]; then
+	
+	echo -e "${GREEN}[INFO]`date`:${NC} Download required, files needed:"
+	
+	batch_file="${ukb_subjects_dir}/${ukb_subject_id}/download.batch"
+	touch $batch_file
+	> $batch_file
+	# rsfc files
+	if [ ! -f ${rsfc_zip} ]; then
+		echo -e "${GREEN}[INFO]`date`:${NC} Download required, fMRI: ${ukb_subject_id} 20227_${ukb_instance}"
+		echo "${ukb_subject_id} 20227_${ukb_instance}" >> $batch_file
+	fi
+	# dwi files
+	if [ ! -f ${dwi_zip} ]; then
+		echo -e "${GREEN}[INFO]`date`:${NC} Download required, dMRI: ${ukb_subject_id} 20250_${ukb_instance}"
+		echo "${ukb_subject_id} 20250_${ukb_instance}" >> $batch_file
+	fi
+	# t1 files
+	if [ ! -f ${t1_zip} ]; then
+		echo -e "${GREEN}[INFO]`date`:${NC} Download required, T1: ${ukb_subject_id} 20252_${ukb_instance}"
+		echo "${ukb_subject_id} 20252_${ukb_instance}" >> $batch_file
+	fi
+	# freesurfer files
+	if [ ! -f ${surf_zip} ]; then
+		echo -e "${GREEN}[INFO]`date`:${NC} Download required, FreeSurfer: ${ukb_subject_id} 20263_${ukb_instance}"
+		echo "${ukb_subject_id} 20263_${ukb_instance}" >> $batch_file
+	fi
+
+	# download the batch (make sure .ukbkey is present and correct)
+	cd "${ukb_subjects_dir}/${ukb_subject_id}"
+	cp "${temporary_dir}/ukb/.ukbkey" .
+	"${temporary_dir}/ukb/ukbfetch" -bdownload.batch -v
+	rm ./.ukbkey
+	cd "${working_dir}"
+fi
+
+cd "${ukb_subjects_dir}/${ukb_subject_id}"
+rsfc_dir="${ukb_subjects_dir}/${ukb_subject_id}/fMRI"
+if [ ! -d ${rsfc_dir} ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, fMRI (${rsfc_dir})."
+	unzip ${rsfc_zip}
+fi
+dwi_dir="${ukb_subjects_dir}/${ukb_subject_id}/dMRI"
+if [ ! -d ${dwi_dir} ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, dMRI (${dwi_dir})."
+	unzip ${dwi_zip}
+fi
+t1_dir="${ukb_subjects_dir}/${ukb_subject_id}/T1"
+if [ ! -d ${t1_dir} ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, T1 (${t1_dir})."
+	unzip ${t1_zip}
+fi
+surf_dir="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer"
+if [ ! -d ${surf_dir} ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, FreeSurfer (${surf_dir})."
+	unzip ${surf_zip}
+fi
+cd "${working_dir}"
+
+
 # To be written...
+exit
 
 
 # --------------------------------------------------------------------------------
