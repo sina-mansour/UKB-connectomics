@@ -49,30 +49,34 @@ output_dir="${main_dir}/data/output"
 # --------------------------------------------------------------------------------
 
 atlases=(
-	# Glasser
-	"Glasser,Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii"
-	# Schaefer 7Networks
-	"Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n200p,Schaefer2018_200Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n300p,Schaefer2018_300Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n400p,Schaefer2018_400Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n500p,Schaefer2018_500Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n600p,Schaefer2018_600Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n700p,Schaefer2018_700Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n800p,Schaefer2018_800Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n900p,Schaefer2018_900Parcels_7Networks_order.dlabel.nii"
-	"Schaefer7n1000p,Schaefer2018_1000Parcels_7Networks_order.dlabel.nii"
-	# Schaefer 17Networks
-	"Schaefer17n100p,Schaefer2018_100Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n200p,Schaefer2018_200Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n300p,Schaefer2018_300Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n400p,Schaefer2018_400Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n500p,Schaefer2018_500Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n600p,Schaefer2018_600Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n700p,Schaefer2018_700Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n800p,Schaefer2018_800Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n900p,Schaefer2018_900Parcels_17Networks_order.dlabel.nii"
-	"Schaefer17n1000p,Schaefer2018_1000Parcels_17Networks_order.dlabel.nii"
+	# Glasser from fsLR space
+	"Glasser,Q1-Q6_RelatedParcellation210.CorticalAreas_dil_Final_Final_Areas_Group_Colors.32k_fs_LR.dlabel.nii,fsLR"
+	# Schaefer 7Networks from fsaverage space
+	# "Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.dlabel.nii"
+	"Schaefer7n100p,Schaefer2018_100Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n200p,Schaefer2018_200Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n300p,Schaefer2018_300Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n400p,Schaefer2018_400Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n500p,Schaefer2018_500Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n600p,Schaefer2018_600Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n700p,Schaefer2018_700Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n800p,Schaefer2018_800Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n900p,Schaefer2018_900Parcels_7Networks_order.annot,fsaverage"
+	"Schaefer7n1000p,Schaefer2018_1000Parcels_7Networks_order.annot,fsaverage"
+	# Schaefer 17Networks from fsaverage space
+	"Schaefer17n100p,Schaefer2018_100Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n200p,Schaefer2018_200Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n300p,Schaefer2018_300Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n400p,Schaefer2018_400Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n500p,Schaefer2018_500Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n600p,Schaefer2018_600Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n700p,Schaefer2018_700Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n800p,Schaefer2018_800Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n900p,Schaefer2018_900Parcels_17Networks_order.annot,fsaverage"
+	"Schaefer17n1000p,Schaefer2018_1000Parcels_17Networks_order.annot,fsaverage"
+	# # Desikan-Killiany and Destrieux from fsnative space
+	# "aparc,aparc.annot,native"
+	# "aparc.a2009s,aparc.a2009s.annot,native"
 )
 
 subcortical_atlases=(
@@ -175,10 +179,6 @@ fi
 cd "${working_dir}"
 
 
-# To be written...
-exit
-
-
 # --------------------------------------------------------------------------------
 # Generate native volumetric atlases
 # --------------------------------------------------------------------------------
@@ -198,9 +198,10 @@ for atlas in ${atlases[@]}; do
 	IFS=',' read -a atlas_info <<< "${atlas}"
 	atlas_name=${atlas_info[0]}
 	atlas_file=${atlas_info[1]}
+	atlas_space=${atlas_info[2]}
 
 	# map surface labels
-	"${script_dir}/bash/label_map_fslr_to_fsaverage.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}" "${atlas_file}"
+	"${script_dir}/bash/label_map_fslr_to_fsaverage.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}" "${atlas_file}" "${atlas_space}"
 done
 
 echo -e "${GREEN}[INFO]`date`:${NC} Completed mapping surface atlases to native surface space."
