@@ -52,6 +52,9 @@ echo -e "${GREEN}[INFO]`date`:${NC} File name: ${atlas_file}"
 left_fsaverage164_atlas_fs="${temporary_dir}/atlases/lh.fsaverage164.${atlas_name}.annot"
 right_fsaverage164_atlas_fs="${temporary_dir}/atlases/rh.fsaverage164.${atlas_name}.annot"
 
+left_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/lh.native.${atlas_name}.annot"
+right_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
+
 if [ "${atlas_space}" == "fsLR" ]; then
 	echo -e "${GREEN}[INFO]`date`:${NC} Starting to map fsLR label to fsnative"
 
@@ -181,19 +184,32 @@ if [ "${atlas_space}" == "fsLR" ] || [ "${atlas_space}" == "fsaverage" ]; then
 	export SUBJECTS_DIR="${ukb_subjects_dir}/${ukb_subject_id}"
 
 	# use mri_surf2surf to resample fsaverage to fsnative
-	left_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/lh.native.${atlas_name}.annot"
 	if [ ! -f ${left_native_atlas_fs} ]; then
 		mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi lh --sval-annot "${left_fsaverage164_atlas_fs}" \
 					  --tval "${left_native_atlas_fs}"
 	fi
 
-	right_native_atlas_fs="${temporary_dir}/subjects/${ukb_subject_id}/atlases/rh.native.${atlas_name}.annot"
 	if [ ! -f ${right_native_atlas_fs} ]; then
 		mri_surf2surf --srcsubject fsaverage164 --trgsubject FreeSurfer --hemi rh --sval-annot "${right_fsaverage164_atlas_fs}" \
 					  --tval "${right_native_atlas_fs}"
 	fi
 
 	echo -e "${GREEN}[INFO]`date`:${NC} Native atlas constructed from fsaverage."
+fi
+
+if [ "${atlas_space}" == "native" ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Converting the native labels to a compatible format"
+
+	# --------------------------------------------------------------------------------
+	# Convert annot files to the appropriate format
+	# --------------------------------------------------------------------------------
+	left_native_atlas_fs_source="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer/label/lh.${atlas_file}"
+	right_native_atlas_fs_source="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer/label/rh.${atlas_file}"
+
+	if [ ! -f ${left_fsaverage164_atlas_fs} ] || [ ! -f ${right_fsaverage164_atlas_fs} ]; then
+		python3 "${script_dir}/python/convert_native_annot.py" ${left_native_atlas_fs_source} \
+		 		${right_native_atlas_fs_source} ${left_native_atlas_fs} ${right_native_atlas_fs}
+	fi
 fi
 
 echo -e "${GREEN}[INFO]`date`:${NC} Surface label mapping finished.."
