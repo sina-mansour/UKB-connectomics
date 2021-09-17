@@ -206,7 +206,7 @@ if [ "${atlas_space}" == "native" ]; then
 	left_native_atlas_fs_source="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer/label/lh.${atlas_file}"
 	right_native_atlas_fs_source="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer/label/rh.${atlas_file}"
 
-	if [ ! -f ${left_fsaverage164_atlas_fs} ] || [ ! -f ${right_fsaverage164_atlas_fs} ]; then
+	if [ ! -f ${left_native_atlas_fs} ] || [ ! -f ${right_native_atlas_fs} ]; then
 		python3 "${script_dir}/python/convert_native_annot.py" ${left_native_atlas_fs_source} \
 		 		${right_native_atlas_fs_source} ${left_native_atlas_fs} ${right_native_atlas_fs}
 	fi
