@@ -75,8 +75,8 @@ atlases=(
 	"Schaefer17n900p,Schaefer2018_900Parcels_17Networks_order.annot,fsaverage"
 	"Schaefer17n1000p,Schaefer2018_1000Parcels_17Networks_order.annot,fsaverage"
 	# # Desikan-Killiany and Destrieux from fsnative space
-	# "aparc,aparc.annot,native"
-	# "aparc.a2009s,aparc.a2009s.annot,native"
+	"aparc,aparc.annot,native"
+	"aparc.a2009s,aparc.a2009s.annot,native"
 )
 
 subcortical_atlases=(
