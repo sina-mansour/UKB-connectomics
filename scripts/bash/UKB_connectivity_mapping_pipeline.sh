@@ -334,4 +334,15 @@ echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
 
 # To be written...
 
+
+# --------------------------------------------------------------------------------
+# Delete unwanted files
+# --------------------------------------------------------------------------------
+
+# for now, we'll just delete all downloaded files as the downloads are rather fast
+# from the high performance computing servers
+if [ -d "${ukb_subjects_dir}/${ukb_subject_id}" ]; then
+	rm -r "${ukb_subjects_dir}/${ukb_subject_id}/*"
+fi
+
 # deactivate
