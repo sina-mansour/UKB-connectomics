@@ -7,8 +7,8 @@
 # Usage: run_automization.sh ...
 #
 
-module load Python/3.6.4-intel-2017.u2
-source venv/bin/activate
+# module intelpython/3.6.8-2019.2.066
+# source venv/bin/activate
 
 # some colors for fancy logging :D
 RED='\033[0;31m'
@@ -31,5 +31,4 @@ done
 
 echo -e "${GREEN}[INFO]${NC} `date`: All jobs submitted."
 
-deactivate
-
+# deactivate
