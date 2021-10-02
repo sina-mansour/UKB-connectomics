@@ -14,19 +14,19 @@ def ensure_dir(file_name):
 
 if __name__ == '__main__':
     # sys.argv
-    main_dir, ukb_subjects_dir, ukb_subject_id, atlas_name = sys.argv[1:]
+    main_dir, ukb_subjects_dir, ukb_subject_id, ukb_instance, atlas_name = sys.argv[1:]
 
     template_dir = "{}/data/templates".format(main_dir)
     temporary_dir = "{}/data/temporary".format(main_dir)
     output_dir = "{}/data/output".format(main_dir)
 
     # load the volumetric atlas
-    cortical_atlas = nib.load('{}/subjects/{}/atlases/native.fMRI_space.{}.nii.gz'.format(temporary_dir, ukb_subject_id, atlas_name))
+    cortical_atlas = nib.load('{}/subjects/{}_{}/atlases/native.fMRI_space.{}.nii.gz'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name))
 
     # load names of all labels from the color lookup table
     cortical_labels = pd.DataFrame(
         np.genfromtxt(
-            '{}/subjects/{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, atlas_name),
+            '{}/subjects/{}_{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name),
             dtype='str'
         ),
         columns=['index', 'label_name', 'R', 'G', 'B', 'A'],
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     )
 
     # load the ica clean fMRI
-    clean_fmri = nib.load('{}/{}/fMRI/rfMRI.ica/filtered_func_data_clean.nii.gz'.format(ukb_subjects_dir, ukb_subject_id))
+    clean_fmri = nib.load('{}/{}_{}/fMRI/rfMRI.ica/filtered_func_data_clean.nii.gz'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
     # extract label names
     cortical_atlas_fmri = cortical_labels[['index', 'label_name']][cortical_labels['label_name'] != '???'].copy()
@@ -67,6 +67,6 @@ if __name__ == '__main__':
 
     # write out the resulting time-series in a csv
     cortical_atlas_fmri.to_csv(
-        ensure_dir('{}/subjects/{}/fMRI/fMRI.{}.csv.gz'.format(temporary_dir, ukb_subject_id, atlas_name)),
+        ensure_dir('{}/subjects/{}_{}/fMRI/fMRI.{}.csv.gz'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)),
         index=False
     )

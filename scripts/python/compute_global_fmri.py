@@ -14,17 +14,17 @@ def ensure_dir(file_name):
 
 if __name__ == '__main__':
     # sys.argv
-    main_dir, ukb_subjects_dir, ukb_subject_id = sys.argv[1:]
+    main_dir, ukb_subjects_dir, ukb_subject_id, ukb_instance = sys.argv[1:]
 
     template_dir = "{}/data/templates".format(main_dir)
     temporary_dir = "{}/data/temporary".format(main_dir)
     output_dir = "{}/data/output".format(main_dir)
 
     # load the brain mask for global signal computation
-    brain_mask = nib.load('{}/{}/fMRI/rfMRI.ica/mask.nii.gz'.format(ukb_subjects_dir, ukb_subject_id))
+    brain_mask = nib.load('{}/{}_{}/fMRI/rfMRI.ica/mask.nii.gz'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
     # load the ica clean fMRI
-    clean_fmri = nib.load('{}/{}/fMRI/rfMRI.ica/filtered_func_data_clean.nii.gz'.format(ukb_subjects_dir, ukb_subject_id))
+    clean_fmri = nib.load('{}/{}_{}/fMRI/rfMRI.ica/filtered_func_data_clean.nii.gz'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
     # compute the global signal
     global_signal_fmri = pd.DataFrame(
@@ -34,6 +34,6 @@ if __name__ == '__main__':
 
     # write out the resulting time-series in a csv
     global_signal_fmri.to_csv(
-        ensure_dir('{}/subjects/{}/fMRI/fMRI.global_signal.csv.gz'.format(temporary_dir, ukb_subject_id)),
+        ensure_dir('{}/subjects/{}_{}/fMRI/fMRI.global_signal.csv.gz'.format(temporary_dir, ukb_subject_id, ukb_instance)),
         index=False
     )
