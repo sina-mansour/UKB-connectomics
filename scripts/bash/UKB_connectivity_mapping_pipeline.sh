@@ -100,30 +100,30 @@ ukb_instance=${subject_instance[1]}
 echo -e "${GREEN}[INFO]`date`:${NC} Downloading required files (subject:${ukb_subject_id}, instance:${ukb_instance})."
 
 # create a directory to store downloaded files
-if [ ! -d "${ukb_subjects_dir}/${ukb_subject_id}" ]; then
-	mkdir -p "${ukb_subjects_dir}/${ukb_subject_id}"
+if [ ! -d "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}" ]; then
+	mkdir -p "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}"
 fi
 
 # create a directory to store temporary files
-if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}" ]; then
-	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}"
+if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}" ]; then
+	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}"
 fi
 
 # create a directory to store output files
-if [ ! -d "${output_dir}/subjects/${ukb_subject_id}" ]; then
-	mkdir -p "${output_dir}/subjects/${ukb_subject_id}"
+if [ ! -d "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}" ]; then
+	mkdir -p "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}"
 fi
 
 # create a batch download file to get all imaging data for the subject and instance
-rsfc_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20227_${ukb_instance}.zip"
-dwi_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20250_${ukb_instance}.zip"
-t1_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20252_${ukb_instance}.zip"
-surf_zip="${ukb_subjects_dir}/${ukb_subject_id}/${ukb_subject_id}_20263_${ukb_instance}.zip"
+rsfc_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20227_${ukb_instance}.zip"
+dwi_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20250_${ukb_instance}.zip"
+t1_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20252_${ukb_instance}.zip"
+surf_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20263_${ukb_instance}.zip"
 if [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f ${surf_zip} ]; then
 	
 	echo -e "${GREEN}[INFO]`date`:${NC} Download required, files needed:"
 	
-	batch_file="${ukb_subjects_dir}/${ukb_subject_id}/download.batch"
+	batch_file="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/download.batch"
 	touch $batch_file
 	> $batch_file
 	# rsfc files
@@ -148,30 +148,30 @@ if [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f $
 	fi
 
 	# download the batch (make sure .ukbkey is present and correct)
-	cd "${ukb_subjects_dir}/${ukb_subject_id}"
+	cd "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}"
 	cp "${temporary_dir}/ukb/.ukbkey" .
 	"${temporary_dir}/ukb/ukbfetch" -bdownload.batch -v
 	rm ./.ukbkey
 	cd "${working_dir}"
 fi
 
-cd "${ukb_subjects_dir}/${ukb_subject_id}"
-rsfc_dir="${ukb_subjects_dir}/${ukb_subject_id}/fMRI"
+cd "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}"
+rsfc_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/fMRI"
 if [ ! -d ${rsfc_dir} ]; then
 	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, fMRI (${rsfc_dir})."
 	unzip ${rsfc_zip}
 fi
-dwi_dir="${ukb_subjects_dir}/${ukb_subject_id}/dMRI"
+dwi_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/dMRI"
 if [ ! -d ${dwi_dir} ]; then
 	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, dMRI (${dwi_dir})."
 	unzip ${dwi_zip}
 fi
-t1_dir="${ukb_subjects_dir}/${ukb_subject_id}/T1"
+t1_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1"
 if [ ! -d ${t1_dir} ]; then
 	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, T1 (${t1_dir})."
 	unzip ${t1_zip}
 fi
-surf_dir="${ukb_subjects_dir}/${ukb_subject_id}/FreeSurfer"
+surf_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer"
 if [ ! -d ${surf_dir} ]; then
 	echo -e "${GREEN}[INFO]`date`:${NC} Extracting download, FreeSurfer (${surf_dir})."
 	unzip ${surf_zip}
@@ -201,7 +201,7 @@ for atlas in ${atlases[@]}; do
 	atlas_space=${atlas_info[2]}
 
 	# map surface labels
-	"${script_dir}/bash/label_map_fslr_to_fsaverage.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}" "${atlas_file}" "${atlas_space}"
+	"${script_dir}/bash/label_map_fslr_to_fsaverage.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${atlas_name}" "${atlas_file}" "${atlas_space}"
 done
 
 echo -e "${GREEN}[INFO]`date`:${NC} Completed mapping surface atlases to native surface space."
@@ -219,15 +219,15 @@ for atlas in ${atlases[@]}; do
 	echo -e "${GREEN}[INFO]`date`:${NC} Mapping ${atlas_name} to native volume."
 
 	# use the python code to map surface labels to native volume
-	native_atlas_location="${temporary_dir}/subjects/${ukb_subject_id}/atlases/native.${atlas_name}.nii.gz"
+	native_atlas_location="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/atlases/native.${atlas_name}.nii.gz"
 	if [ ! -f ${native_atlas_location} ]; then
-		python3 "${script_dir}/python/map_surface_label_to_volume.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+		python3 "${script_dir}/python/map_surface_label_to_volume.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${atlas_name}"
 	fi
 
 	# This native parcellation should now be resampled to the fmri space
-	native_atlas_location_fMRI="${temporary_dir}/subjects/${ukb_subject_id}/atlases/native.fMRI_space.${atlas_name}.nii.gz"
+	native_atlas_location_fMRI="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/atlases/native.fMRI_space.${atlas_name}.nii.gz"
 	if [ ! -f ${native_atlas_location_fMRI} ]; then
-		mri_vol2vol --mov "${native_atlas_location}" --targ "${ukb_subjects_dir}/${ukb_subject_id}/fMRI/rfMRI.ica/mean_func.nii.gz" --interp nearest --regheader --o "${native_atlas_location_fMRI}"
+		mri_vol2vol --mov "${native_atlas_location}" --targ "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/fMRI/rfMRI.ica/mean_func.nii.gz" --interp nearest --regheader --o "${native_atlas_location_fMRI}"
 	fi
 done
 
@@ -235,15 +235,15 @@ done
 
 echo -e "${GREEN}[INFO]`date`:${NC} Mapping MNI subcortical atlases to native volume."
 
-if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}/transforms" ]; then
-	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}/transforms"
+if [ ! -d "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/transforms" ]; then
+	mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/transforms"
 fi
 
 # compute inverse warp required for warping labels to native
 echo -e "${GREEN}[INFO]`date`:${NC} Computing the inverse warp."
-inverse_warp="${temporary_dir}/subjects/${ukb_subject_id}/transforms/MNI_to_T1_inversed_warp_coef.nii.gz"
+inverse_warp="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/transforms/MNI_to_T1_inversed_warp_coef.nii.gz"
 if [ ! -f ${inverse_warp} ]; then
-	invwarp --ref="${ukb_subjects_dir}/${ukb_subject_id}/T1/T1_brain.nii.gz" --warp="${ukb_subjects_dir}/${ukb_subject_id}/T1/transforms/T1_to_MNI_warp_coef.nii.gz" --out="${inverse_warp}"
+	invwarp --ref="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz" --warp="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/transforms/T1_to_MNI_warp_coef.nii.gz" --out="${inverse_warp}"
 fi
 
 # map all subcortical atlases to native volume
@@ -258,15 +258,15 @@ for atlas in ${subcortical_atlases[@]}; do
 	atlas_location="${template_dir}/atlases/${atlas_file}"
 
 	# use FSL's applywarp to map subcortical labels to native volume
-	native_atlas_location="${temporary_dir}/subjects/${ukb_subject_id}/atlases/native.${atlas_name}.nii.gz"
+	native_atlas_location="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/atlases/native.${atlas_name}.nii.gz"
 	if [ ! -f ${native_atlas_location} ]; then
-		applywarp --ref="${ukb_subjects_dir}/${ukb_subject_id}/T1/T1_brain.nii.gz" --in="${atlas_location}" --warp="${inverse_warp}" --out="${native_atlas_location}" --interp=nn
+		applywarp --ref="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz" --in="${atlas_location}" --warp="${inverse_warp}" --out="${native_atlas_location}" --interp=nn
 	fi
 
 	# This native parcellation should now be resampled to the fmri space
-	native_atlas_location_fMRI="${temporary_dir}/subjects/${ukb_subject_id}/atlases/native.fMRI_space.${atlas_name}.nii.gz"
+	native_atlas_location_fMRI="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/atlases/native.fMRI_space.${atlas_name}.nii.gz"
 	if [ ! -f ${native_atlas_location_fMRI} ]; then
-		mri_vol2vol --mov "${native_atlas_location}" --targ "${ukb_subjects_dir}/${ukb_subject_id}/fMRI/rfMRI.ica/mean_func.nii.gz" --interp nearest --regheader --o "${native_atlas_location_fMRI}"
+		mri_vol2vol --mov "${native_atlas_location}" --targ "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/fMRI/rfMRI.ica/mean_func.nii.gz" --interp nearest --regheader --o "${native_atlas_location_fMRI}"
 	fi
 done
 
@@ -290,9 +290,9 @@ for atlas in ${atlases[@]}; do
 	echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on ${atlas_name} atlas."
 
 	# use the python code to map fMRI time-series onto cortical atlases
-	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.${atlas_name}.csv.gz"
+	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/fMRI/fMRI.${atlas_name}.csv.gz"
 	if [ ! -f ${fMRI_data} ]; then
-		python3 "${script_dir}/python/compute_cortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+		python3 "${script_dir}/python/compute_cortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${atlas_name}"
 	fi
 done
 
@@ -309,9 +309,9 @@ for atlas in ${subcortical_atlases[@]}; do
 	echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on ${atlas_name} atlas."
 
 	# use the python code to map fMRI time-series onto cortical atlases
-	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.${atlas_name}.csv.gz"
+	fMRI_data="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/fMRI/fMRI.${atlas_name}.csv.gz"
 	if [ ! -f ${fMRI_data} ]; then
-		python3 "${script_dir}/python/compute_subcortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${atlas_name}"
+		python3 "${script_dir}/python/compute_subcortical_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${atlas_name}"
 	fi
 done
 
@@ -320,9 +320,9 @@ done
 echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI for global signal."
 
 # use the python code to map fMRI time-series onto cortical atlases
-global_signal_fmri="${temporary_dir}/subjects/${ukb_subject_id}/fMRI/fMRI.global_signal.csv.gz"
+global_signal_fmri="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/fMRI/fMRI.global_signal.csv.gz"
 if [ ! -f ${global_signal_fmri} ]; then
-	python3 "${script_dir}/python/compute_global_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}"
+	python3 "${script_dir}/python/compute_global_fmri.py" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}"
 fi
 
 echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
@@ -341,8 +341,8 @@ echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
 
 # for now, we'll just delete all downloaded files as the downloads are rather fast
 # from the high performance computing servers
-if [ -d "${ukb_subjects_dir}/${ukb_subject_id}" ]; then
-	rm -r "${ukb_subjects_dir}/${ukb_subject_id}/"
+if [ -d "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}" ]; then
+	rm -r "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/"
 fi
 
 # deactivate

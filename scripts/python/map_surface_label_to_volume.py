@@ -27,7 +27,7 @@ def time_str(mode='abs', base=None):
 
 if __name__ == '__main__':
     # sys.argv
-    main_dir, ukb_subjects_dir, ukb_subject_id, atlas_name = sys.argv[1:]
+    main_dir, ukb_subjects_dir, ukb_subject_id, ukb_instance, atlas_name = sys.argv[1:]
 
     template_dir = "{}/data/templates".format(main_dir)
     temporary_dir = "{}/data/temporary".format(main_dir)
@@ -39,11 +39,11 @@ if __name__ == '__main__':
     #     1. the coordinates of all vertices
     #     2. the triangle information of the mesh
 
-    lh_pial_surf = freesurfer.read_geometry('{}/{}/FreeSurfer/surf/lh.pial'.format(ukb_subjects_dir, ukb_subject_id))
-    lh_white_surf = freesurfer.read_geometry('{}/{}/FreeSurfer/surf/lh.white'.format(ukb_subjects_dir, ukb_subject_id))
+    lh_pial_surf = freesurfer.read_geometry('{}/{}_{}/FreeSurfer/surf/lh.pial'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
+    lh_white_surf = freesurfer.read_geometry('{}/{}_{}/FreeSurfer/surf/lh.white'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
-    rh_pial_surf = freesurfer.read_geometry('{}/{}/FreeSurfer/surf/rh.pial'.format(ukb_subjects_dir, ukb_subject_id))
-    rh_white_surf = freesurfer.read_geometry('{}/{}/FreeSurfer/surf/rh.white'.format(ukb_subjects_dir, ukb_subject_id))
+    rh_pial_surf = freesurfer.read_geometry('{}/{}_{}/FreeSurfer/surf/rh.pial'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
+    rh_white_surf = freesurfer.read_geometry('{}/{}_{}/FreeSurfer/surf/rh.white'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
     # Now let's load the surface atlas mapped to each surface
     #
@@ -52,8 +52,8 @@ if __name__ == '__main__':
     #     2. A table for the color of each label (r, g, b, t, colortable array id)
     #     3. A list names of the lables
 
-    lh_atlas_annot = freesurfer.read_annot('{}/subjects/{}/atlases/lh.native.{}.annot'.format(temporary_dir, ukb_subject_id, atlas_name))
-    rh_atlas_annot = freesurfer.read_annot('{}/subjects/{}/atlases/rh.native.{}.annot'.format(temporary_dir, ukb_subject_id, atlas_name))
+    lh_atlas_annot = freesurfer.read_annot('{}/subjects/{}_{}/atlases/lh.native.{}.annot'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name))
+    rh_atlas_annot = freesurfer.read_annot('{}/subjects/{}_{}/atlases/rh.native.{}.annot'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name))
 
     print('{}: \033[0;32m[INFO]\033[0m There are {} unique labels in surface atlas: {} (including ???)'.format(
         time_str(),
@@ -83,7 +83,7 @@ if __name__ == '__main__':
 
     label_id = {id_to_label[x]: x for x in id_to_label}
 
-    ribbon = nib.load('{}/{}/FreeSurfer/mri/ribbon.mgz'.format(ukb_subjects_dir, ukb_subject_id))
+    ribbon = nib.load('{}/{}_{}/FreeSurfer/mri/ribbon.mgz'.format(ukb_subjects_dir, ukb_subject_id, ukb_instance))
 
     # We'll use kdtree to store the coordinates in data structure to query for nearest neighbor
     #
@@ -136,12 +136,12 @@ if __name__ == '__main__':
 
     nib.save(
         img,
-        ensure_dir('{}/subjects/{}/atlases/native.{}.nii.gz'.format(temporary_dir, ukb_subject_id, atlas_name))
+        ensure_dir('{}/subjects/{}_{}/atlases/native.{}.nii.gz'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name))
     )
 
     # color lookup table in freesurfer format
     np.savetxt(
-        ensure_dir('{}/subjects/{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, atlas_name)),
+        ensure_dir('{}/subjects/{}_{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)),
         np.array(
             pd.DataFrame({
                 '#No.': np.arange(len(lh_atlas_annot[2])),
@@ -158,7 +158,7 @@ if __name__ == '__main__':
     # color lookup table to be used with the connectome workbench viewer
     atlas_labels = [x.decode('utf8') for x in lh_atlas_annot[2]]
 
-    with open(ensure_dir('{}/subjects/{}/atlases/{}.label_list.txt'.format(temporary_dir, ukb_subject_id, atlas_name)), 'w') as label_list_file:
+    with open(ensure_dir('{}/subjects/{}_{}/atlases/{}.label_list.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)), 'w') as label_list_file:
         for i in range(1, len(lh_atlas_annot[2])):
             label_list_file.write(
                 '{}\n{} {} {} {} {}\n'.format(
