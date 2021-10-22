@@ -36,7 +36,7 @@ NC='\033[0m'
 main_dir=$1
 ukb_subjects_dir=$2
 line_number=$3
-delete_download=$4
+delete_download=${4:-yes}
 
 working_dir=`pwd`
 
@@ -342,7 +342,7 @@ echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
 
 # for now, we'll just delete all downloaded files as the downloads are rather fast
 # from the high performance computing servers
-if [ -d "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}" ] && [ ${delete_download} != "no-delete" ]; then
+if [ -d "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}" ] && [ ${delete_download} == "yes" ]; then
 	rm -r "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/"
 fi
 
