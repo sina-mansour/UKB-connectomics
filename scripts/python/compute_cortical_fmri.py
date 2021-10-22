@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # load names of all labels from the color lookup table
     cortical_labels = pd.DataFrame(
         np.genfromtxt(
-            '{}/subjects/{}_{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name),
+            '{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name),
             dtype='str'
         ),
         columns=['index', 'label_name', 'R', 'G', 'B', 'A'],
