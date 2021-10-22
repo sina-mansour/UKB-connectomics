@@ -139,34 +139,35 @@ if __name__ == '__main__':
         ensure_dir('{}/subjects/{}_{}/atlases/native.{}.nii.gz'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name))
     )
 
-    # color lookup table in freesurfer format
-    np.savetxt(
-        ensure_dir('{}/subjects/{}_{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)),
-        np.array(
-            pd.DataFrame({
-                '#No.': np.arange(len(lh_atlas_annot[2])),
-                'Label Name': [x.decode('utf8') for x in lh_atlas_annot[2]],
-                'R': lh_atlas_annot[1][:, 0],
-                'G': lh_atlas_annot[1][:, 1],
-                'B': lh_atlas_annot[1][:, 2],
-                'A': lh_atlas_annot[1][:, 3],
-            })
-        ),
-        fmt=['%d', '%s', '%d', '%d', '%d', '%d']
-    )
+    # This next bit of code was commented out to reduce file quota
+    # # color lookup table in freesurfer format
+    # np.savetxt(
+    #     ensure_dir('{}/subjects/{}_{}/atlases/{}.ColorLUT.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)),
+    #     np.array(
+    #         pd.DataFrame({
+    #             '#No.': np.arange(len(lh_atlas_annot[2])),
+    #             'Label Name': [x.decode('utf8') for x in lh_atlas_annot[2]],
+    #             'R': lh_atlas_annot[1][:, 0],
+    #             'G': lh_atlas_annot[1][:, 1],
+    #             'B': lh_atlas_annot[1][:, 2],
+    #             'A': lh_atlas_annot[1][:, 3],
+    #         })
+    #     ),
+    #     fmt=['%d', '%s', '%d', '%d', '%d', '%d']
+    # )
 
-    # color lookup table to be used with the connectome workbench viewer
-    atlas_labels = [x.decode('utf8') for x in lh_atlas_annot[2]]
+    # # color lookup table to be used with the connectome workbench viewer
+    # atlas_labels = [x.decode('utf8') for x in lh_atlas_annot[2]]
 
-    with open(ensure_dir('{}/subjects/{}_{}/atlases/{}.label_list.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)), 'w') as label_list_file:
-        for i in range(1, len(lh_atlas_annot[2])):
-            label_list_file.write(
-                '{}\n{} {} {} {} {}\n'.format(
-                    atlas_labels[i],
-                    i,
-                    lh_atlas_annot[1][i, 0],
-                    lh_atlas_annot[1][i, 1],
-                    lh_atlas_annot[1][i, 2],
-                    (255 - lh_atlas_annot[1][i, 3]),
-                )
-            )
+    # with open(ensure_dir('{}/subjects/{}_{}/atlases/{}.label_list.txt'.format(temporary_dir, ukb_subject_id, ukb_instance, atlas_name)), 'w') as label_list_file:
+    #     for i in range(1, len(lh_atlas_annot[2])):
+    #         label_list_file.write(
+    #             '{}\n{} {} {} {} {}\n'.format(
+    #                 atlas_labels[i],
+    #                 i,
+    #                 lh_atlas_annot[1][i, 0],
+    #                 lh_atlas_annot[1][i, 1],
+    #                 lh_atlas_annot[1][i, 2],
+    #                 (255 - lh_atlas_annot[1][i, 3]),
+    #             )
+    #         )
