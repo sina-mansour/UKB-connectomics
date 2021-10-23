@@ -120,10 +120,13 @@ rsfc_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id
 dwi_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20250_${ukb_instance}.zip"
 t1_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20252_${ukb_instance}.zip"
 surf_zip="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_20263_${ukb_instance}.zip"
-if [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f ${surf_zip} ]; then
+while [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f ${surf_zip} ]; do
 	
 	echo -e "${GREEN}[INFO]`date`:${NC} Download required, files needed:"
 	
+	# give a bit of time before trying
+	sleep 0.5
+
 	batch_file="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/download.batch"
 	touch $batch_file
 	> $batch_file
@@ -154,7 +157,7 @@ if [ ! -f ${rsfc_zip} ] || [ ! -f ${dwi_zip} ] || [ ! -f ${t1_zip} ] || [ ! -f $
 	"${temporary_dir}/ukb/ukbfetch" -bdownload.batch -v
 	rm ./.ukbkey
 	cd "${working_dir}"
-fi
+done
 
 cd "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}"
 rsfc_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/fMRI"
