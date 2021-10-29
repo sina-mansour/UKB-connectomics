@@ -24,7 +24,7 @@ index=$start_index
 while [ $index -lt $end_index ]
 do
         echo -e "${GREEN}[INFO]${NC} `date`: Submitting job for: instance ${index}"
-        sbatch --job-name="ukb_${index}" --comment="UKB mapping pipeline, instance #${subject}" automate.sh ${index}
+        sbatch --job-name="ukb_${index}" --comment="UKB mapping pipeline, instance #${index}" automate.sh ${index}
         sleep 0.1
         ((index = index + 1))
 done
