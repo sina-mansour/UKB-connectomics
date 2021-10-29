@@ -35,7 +35,9 @@ required_file_list=$5
 temporary_dir="${main_dir}/data/temporary"
 
 index=$start_index
-while [ $index -lt $end_index ]
+end_line=$(($(< "${temporary_dir}/bulk/dwi,rsfc,surf,t1.combined" wc -l) + 1))
+min_end=$(( end_index < end_line ? end_index : end_line ))
+while [ $index -lt $min_end ]
 do
         # Report index
         echo -e "${GREEN}[INFO]${NC} `date`: Checking files for: instance ${index}"
@@ -68,7 +70,7 @@ do
                 sbatch --job-name="ukb_${index}_smart" --comment="UKB mapping pipeline, instance #${index}" automate.sh ${index}
                 sleep 0.1
         fi
-        
+
         ((index = index + 1))
 done
 
