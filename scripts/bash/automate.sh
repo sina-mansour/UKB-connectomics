@@ -34,7 +34,7 @@ index=$1
 code_dir="/data/gpfs/projects/punim1566/UKB-connectomics"
 # data_dir="/data/gpfs/projects/punim1566/UKB-download"
 # instead, download to scratch space
-data_dir="/data/gpfs/projects/punim1566/UKB-download"
+data_dir="/data/scratch/projects/punim1566/UKB-download"
 
 cd ${code_dir}
 
