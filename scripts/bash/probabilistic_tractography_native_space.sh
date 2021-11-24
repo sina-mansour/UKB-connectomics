@@ -71,7 +71,7 @@ if [ ! -f ${wm_txt} ] || [ ! -f ${gm_txt} ] || [ ! -f ${csf_txt} ]; then
 fi
 
 
-# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~8min)
+# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~11min)
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
@@ -87,19 +87,21 @@ if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
 fi
 
 
-######################################################################################
-# RS: Currently missing from here is the mtnormalise command. I do not know the extent to
-# which the UKB pre-processing deals with the B1 bias field, as many models perform all
-# computations relative to the b=0 image intensity, and therefore a multiplicative bias
-# field is irrelevant; but for AFD it is highly critical. I would suggest just using
-# the mtnormalise command as-is here. It is however worth checking the quality of the
-# brain masks in some exemplar subjects: inclusion of non-brain voxels in the mask here
-# can be highly detrimental:
-# https://github.com/MRtrix3/mrtrix3/issues/1973
-# So unlike the mask used for CSD above, where a generous mask is preferable, here a more
-# conservative mask is preferable; indeed it may be preferable to erode the mask slightly
-# for mtnormalise.
-######################################################################################
+# mtnormalise to perform multi-tissue log-domain intensity normalisation (~5sec)
+wm_fod_norm="${dmri_dir}/wmfod_norm.mif"
+gm_fod_norm="${dmri_dir}/gmfod_norm.mif"
+csf_fod_norm="${dmri_dir}/csffod_norm.mif"
+if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Running multi-tissue log-domain intensity normalisation"
+    
+    # First, creating an eroded brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/5)
+    maskfilter -npass 1 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
+
+    # Now, perfoming mtnormalise
+    mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
+                "${csf_fod_norm}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
+fi
+
 
 
 # Create a mask of white matter gray matter interface using 5 tissue type segmentation (~10sec)
@@ -246,7 +248,7 @@ tracks="${dmri_dir}/tracks_${streamlines}.tck"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
     tckgen -seed_image "${gmwm_seed}" -mask "${trim_mask}" -seeds "${streamlines}" \
-           -maxlength 250 -cutoff 0.1 -nthreads 1 "${wm_fod}" "${tracks}"
+           -maxlength 250 -cutoff 0.1 -nthreads 1 "${wm_fod_norm}" "${tracks}"
            # extra options to check??? -act -crop_at_gmwmi -seed_gmwmi -trials -step -seeds
 fi
 
