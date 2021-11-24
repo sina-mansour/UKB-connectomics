@@ -33,22 +33,9 @@ temporary_dir="${main_dir}/data/temporary"
 fsaverage_dir="${template_dir}/freesurfer/fsaverage"
 dmri_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/dMRI/dMRI"
 
-########################################################################################
-# RS: I see you using `date`; I've thought about how best to integrate into the Python API
-# the ability to (in the back-end) quantify the amount of time taken for different commands.
-# If you wanted to port this script to that API I could prioritise implementing that, so
-# that this information would be available not just here but in all MRtrix3 Python scripts.
-########################################################################################
 echo -e "${GREEN}[INFO]`date`:${NC} Starting tractography for: ${ukb_subject_id}_${ukb_instance}"
 
 # Create a temporary directory to store files
-########################################################################################
-# RS: If you can guarantee adequate space, creating the scratch directory in /tmp/ would
-# result in using a RAM file system, which will be way faster than a shared 
-# network filesystem. For re-executing data for which some files are pre-existing, you
-# would need to explicitly manage the scratch directory location. My Python API provides
-# command-line options for doing this.
-########################################################################################
 tractography_dir="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography"
 if [ ! -d "${tractography_dir}" ]; then
     mkdir -p "${tractography_dir}"
@@ -85,27 +72,17 @@ fi
 
 
 # Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~8min)
-####################################################################################
-# RS: Personally I often here dilate the mask prior to running CSD.
-# DWI brain masks are often imperfect. If the mask is a little too generous, then you
-# may perform CSD for a voxel that never gets utilised, in which case you are simply 
-# wasting CUP cycles. However if you fail to perform CSD for a voxel where you do in
-# fact need the ODF(s), that's a bigger problem. The voxels for which you "need" CSD 
-# to be run is principally based on the 5TT segmentation. A problem arises if you have
-# a location where the 5TT image suggests that tracking should be permitted, but no ODF
-# was computed. It's worth checking a few exemplar subjects to see the likelihood of 
-# this being a problem. A common problematic area is the anterior MCP, which can be
-# erroneously omitted from the DWI brain mask. Personally I often dilate the brain mask
-# a couple of times for running CSD.
-# (Though the problem would need to be sufficiently prevalent & severe to motivate
-# deviating away from the simpler approach of simply using the provided brain mask as-is)
-####################################################################################
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
 if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
-    dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" \
+    
+    # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
+    maskfilter -npass 2 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_2.nii.gz"
+
+    # Now, perfoming CSD with the dilated mask
+    dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_2.nii.gz" \
                      "${wm_txt}" "${wm_fod}" "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}"
 fi
 
