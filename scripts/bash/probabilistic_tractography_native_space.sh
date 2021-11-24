@@ -7,30 +7,6 @@
 # 
 
 
-###############################################################################
-# RS: For this project it may be beneficial to centralise this script (and
-# potentially any other resources associated with the project) in a private
-# GitHub repository. That would permit:
-# - Anyone involved with the project to see the current state of the code at any time
-# - Dedicated issue discussion threads
-# - See changesets for proposed changes as they are made
-# - Ability to explicitly tag versions of the code at different points in time
-# - Upon publication the repository is simply transitioned to be public
-###############################################################################
-
-###############################################################################
-# RS: Porting to the MRtrix3 Python API would supersede some of the colouring / 
-# logging features, scratch directory usage, and make some of the syntax
-# more clear. I have a particular distaste for Bash, though some prefer to
-# remain in that space. But it would also mean that upon making the script publicly
-# available, people would be offered a standardised help page as with other
-# MRtrix3 commands etc.. Up to you, obviously I'd like people to be using the API
-# given I created it, but I've also got the experience of things that go wrong
-# when scripting in Bash that motivated me to create it.
-# https://www.sciencedirect.com/science/article/pii/S1053811919307281#appsec2
-###############################################################################
-
-
 # some colors for fancy logging :D
 RED='\033[0;31m'
 GREEN='\033[0;32m'
