@@ -75,11 +75,12 @@ fi
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
+dwi_mask="${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz"
 if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 3 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
+    maskfilter -npass 3 "${dwi_mask}" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
 
     # Now, perfoming CSD with the dilated mask
     dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz" \
@@ -95,7 +96,7 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
     echo -e "${GREEN}[INFO]${NC} `date`: Running multi-tissue log-domain intensity normalisation"
     
     # First, creating an eroded brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/5)
-    maskfilter -npass 1 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
+    maskfilter -npass 1 "${dwi_mask}" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
 
     # Now, perfoming mtnormalise
     mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
@@ -104,7 +105,7 @@ fi
 
 
 
-# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~10sec)
+# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~30sec)
 # Q:Shall we use FSL FAST's output or Freesurfer or the new hsvs? --> freesurfer is faster
 #####################################################################################
 # RS: 5ttgen freesurfer is probably the best choice given limited computational resources.
@@ -131,6 +132,16 @@ fi
 # https://www.sciencedirect.com/science/article/pii/S1053811914008155#s0130
 #####################################################################################
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
+dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
+T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
+T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
+T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
+dwi_pseudoT1="${dmri_dir}/dwi_pseudoT1.mif"
+T1_pseudobzero="${dmri_dir}/T1_pseudobzero.mif"
+transform_T1_pT1="${dmri_dir}/transform_T1_pT1.txt"
+transform_pb0_b0="${dmri_dir}/transform_pb0_b0.txt"
+transform_T1_DWI="${dmri_dir}/transform_T1_DWI.txt"
+gmwm_seed_T1="${dmri_dir}/gmwm_seed_T1.mif"
 gmwm_seed="${dmri_dir}/gmwm_seed.mif"
 if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
@@ -138,17 +149,33 @@ if [ ! -f ${gmwm_seed} ]; then
     5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
                       "${freesurfer_5tt}" -nocrop -sgm_amyg_hipp
 
-    # Coregistering the Diffusion and Anatomical Images
-    # https://andysbrainbook.readthedocs.io/en/latest/MRtrix/MRtrix_Course/MRtrix_06_TissueBoundary.html
-    # Not needed, as T1 and dMRI images are in the same space.
-#####################################################################################
-# RS: As discussed, they *should be* aligned well, but this may not be the case;
-# requires further investigation to determine whether or not an explicit registration
-# step should be included here (and indeed what tool would be used if so).
-######################################################################################    
-
     # Next generate the boundary ribbon
-    5tt2gmwmi "${freesurfer_5tt}" "${gmwm_seed}"
+    5tt2gmwmi "${freesurfer_5tt}" "${gmwm_seed_T1}"
+
+    # Coregistering the Diffusion and Anatomical Images
+    # Check these links for further info:
+    # https://github.com/sina-mansour/UKB-connectomics/issues/7
+    # https://github.com/BIDS-Apps/MRtrix3_connectome/blob/0.5.0/mrtrix3_connectome.py#L1625-L1707
+    # https://andysbrainbook.readthedocs.io/en/latest/MRtrix/MRtrix_Course/MRtrix_06_TissueBoundary.html
+    # T1 and dMRI images are in different spaces, hence we'll use a rigid body transformation.
+
+    # Generate contrast matched target images for coregistration
+    dwiextract "${dwi_mif}" -bzero - | mrcalc - 0.0 -max - | mrmath - mean -axis 3 "${dwi_meanbzero}"
+    mrcalc 1 "${dwi_meanbzero}" -div "${dwi_mask}" -mult - | mrhistmatch nonlinear - "${T1_brain}" \
+           "${dwi_pseudoT1}" -mask_input "${dwi_mask}" -mask_target "${T1_brain_mask}"
+    mrcalc 1 "${T1_brain}" -div "${T1_brain_mask}" -mult - | mrhistmatch nonlinear - "${dwi_meanbzero}" \
+           "${T1_pseudobzero}" -mask_input "${T1_brain_mask}" -mask_target "${dwi_mask}"
+
+    # Perform rigid body registration
+    mrregister "${T1_brain}" "${dwi_pseudoT1}" -type rigid -mask1 "${T1_brain_mask}" -mask2 "${dwi_mask}" \
+               -rigid "${transform_T1_pT1}"
+    mrregister "${T1_pseudobzero}" "${dwi_meanbzero}" -type rigid -mask1 "${T1_brain_mask}" -mask2 "${dwi_mask}" \
+               -rigid "${transform_pb0_b0}"
+    transformcalc "${transform_T1_pT1}" "${transform_pb0_b0}" average "${transform_T1_DWI}"
+
+    # Perform transformation of the boundary ribbon from T1 to DWI space
+    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_T1_DWI}"
+    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_T1_DWI}"
 fi
 
 # Create white matter + subcortical binary mask to trim streamline endings (~1sec)
