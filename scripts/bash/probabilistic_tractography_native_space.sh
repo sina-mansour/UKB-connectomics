@@ -244,14 +244,14 @@ fi
 # - Still discussion to be had RE: requesting specific number of seeds vs. streamlines vs. selected streamlines
 #   https://github.com/MRtrix3/mrtrix3/issues/2391
 #############################################################################################
-streamlines="100K" # testing with a smaller value: for 100K seeds, it took ~40sec, see below:
+streamlines="100K" # testing with a smaller value: for 100K seeds, it took ~70sec, see below:
 # tckgen: [100%]   100000 seeds,    44305 streamlines,    17317 selected
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
     tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
-           -maxlength 250 -cutoff 0.1 -nthreads 1 "${wm_fod_norm}" "${tracks}"
-           # extra options to check??? -act -crop_at_gmwmi -seed_gmwmi -trials -step -seeds
+           -maxlength 250 -cutoff 0.1 -nthreads 0 "${wm_fod_norm}" "${tracks}" -power 0.5 \
+           -info -samples 3
 fi
 
 # Tractography considerations:
