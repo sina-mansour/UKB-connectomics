@@ -79,10 +79,10 @@ if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 2 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_2.nii.gz"
+    maskfilter -npass 3 "${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
 
     # Now, perfoming CSD with the dilated mask
-    dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_2.nii.gz" \
+    dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz" \
                      "${wm_txt}" "${wm_fod}" "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}"
 fi
 
