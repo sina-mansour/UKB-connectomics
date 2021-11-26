@@ -33,7 +33,7 @@ temporary_dir="${main_dir}/data/temporary"
 fsaverage_dir="${template_dir}/freesurfer/fsaverage"
 dmri_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/dMRI/dMRI"
 
-echo -e "${GREEN}[INFO]`date`:${NC} Starting tractography for: ${ukb_subject_id}_${ukb_instance}"
+echo -e "${GREEN}[INFO]${NC} `date`: Starting tractography for: ${ukb_subject_id}_${ukb_instance}"
 
 # Create a temporary directory to store files
 tractography_dir="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography"
@@ -71,19 +71,20 @@ if [ ! -f ${wm_txt} ] || [ ! -f ${gm_txt} ] || [ ! -f ${csf_txt} ]; then
 fi
 
 
-# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~11min)
+# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~12min)
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
 dwi_mask="${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz"
+dwi_mask_dilated="${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
 if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 3 "${dwi_mask}" dilate "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
+    maskfilter -npass 3 "${dwi_mask}" dilate "${dwi_mask_dilated}"
 
     # Now, perfoming CSD with the dilated mask
-    dwi2fod msmt_csd "${dwi_mif}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz" \
+    dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" \
                      "${wm_txt}" "${wm_fod}" "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}"
 fi
 
@@ -138,9 +139,9 @@ T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
 T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
 dwi_pseudoT1="${dmri_dir}/dwi_pseudoT1.mif"
 T1_pseudobzero="${dmri_dir}/T1_pseudobzero.mif"
-transform_T1_pT1="${dmri_dir}/transform_T1_pT1.txt"
-transform_pb0_b0="${dmri_dir}/transform_pb0_b0.txt"
-transform_T1_DWI="${dmri_dir}/transform_T1_DWI.txt"
+transform_pT1_T1="${dmri_dir}/transform_pT1_T1.txt"
+transform_b0_pb0="${dmri_dir}/transform_b0_pb0.txt"
+transform_DWI_T1="${dmri_dir}/transform_DWI_T1.txt"
 gmwm_seed_T1="${dmri_dir}/gmwm_seed_T1.mif"
 gmwm_seed="${dmri_dir}/gmwm_seed.mif"
 if [ ! -f ${gmwm_seed} ]; then
@@ -167,15 +168,15 @@ if [ ! -f ${gmwm_seed} ]; then
            "${T1_pseudobzero}" -mask_input "${T1_brain_mask}" -mask_target "${dwi_mask}"
 
     # Perform rigid body registration
-    mrregister "${T1_brain}" "${dwi_pseudoT1}" -type rigid -mask1 "${T1_brain_mask}" -mask2 "${dwi_mask}" \
-               -rigid "${transform_T1_pT1}"
-    mrregister "${T1_pseudobzero}" "${dwi_meanbzero}" -type rigid -mask1 "${T1_brain_mask}" -mask2 "${dwi_mask}" \
-               -rigid "${transform_pb0_b0}"
-    transformcalc "${transform_T1_pT1}" "${transform_pb0_b0}" average "${transform_T1_DWI}"
+    mrregister "${dwi_pseudoT1}" "${T1_brain}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
+               -rigid "${transform_pT1_T1}"
+    mrregister "${dwi_meanbzero}" "${T1_pseudobzero}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
+               -rigid "${transform_b0_pb0}"
+    transformcalc "${transform_pT1_T1}" "${transform_b0_pb0}" average "${transform_DWI_T1}"
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
-    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_T1_DWI}"
-    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_T1_DWI}"
+    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse
+    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse
 fi
 
 # Create white matter + subcortical binary mask to trim streamline endings (~1sec)
@@ -320,7 +321,7 @@ fi
 ###############################################################################################
 
 
-echo -e "${GREEN}[INFO]`date`:${NC} Finished tractography for: ${ukb_subject_id}_${ukb_instance}"
+echo -e "${GREEN}[INFO]${NC} `date`: Finished tractography for: ${ukb_subject_id}_${ukb_instance}"
 
 
 ################################################################################################
