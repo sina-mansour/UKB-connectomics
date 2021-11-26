@@ -132,6 +132,7 @@ fi
 # segmentations rather than the FreeSurfer ones:
 # https://www.sciencedirect.com/science/article/pii/S1053811914008155#s0130
 #####################################################################################
+freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
 dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
@@ -148,10 +149,10 @@ if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
     # First create the 5tt image
     5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
-                      "${freesurfer_5tt}" -nocrop -sgm_amyg_hipp
+                      "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp
 
     # Next generate the boundary ribbon
-    5tt2gmwmi "${freesurfer_5tt}" "${gmwm_seed_T1}"
+    5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}"
 
     # Coregistering the Diffusion and Anatomical Images
     # Check these links for further info:
@@ -176,35 +177,8 @@ if [ ! -f ${gmwm_seed} ]; then
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
     mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse
+    mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse
     mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse
-fi
-
-# Create white matter + subcortical binary mask to trim streamline endings (~1sec)
-#######################################################################################
-# RS: This approach had a specific motivation in the high-resolution connectome project,
-# being that you did not want streamlines entering the sub-cortical grey matter structures
-# to be forced to terminate within that structure, due to an inability to utilise those
-# structures for connectome construction. For this project however I don't think that's the
-# right way to go. If, instead of deriving a mask from the ACT 5TT image, you simply use ACT
-# out of the box, then this will intrinsically achieve what you are trying to do here
-# (preventing streamline vertices from being generated beyond the extent of this mask),
-# but with additional benefits (preventing streamlines from passing through sub-cortical GM,
-# which is a constraint we do want in this case; use of back-tracking if you want it;
-# and unlike the use of a binary mask, ACT will perform interpolation on the 5TT image, 
-# which means that the tissue isocontours will include 45-degree edges rather than having
-# purely 90-degree edges on the voxel grid).
-#######################################################################################
-trim_mask="${dmri_dir}/trim.mif"
-if [ ! -f ${trim_mask} ]; then
-    echo -e "${GREEN}[INFO]${NC} `date`: Running code to generate trimming mask"
-    # first extract the white matter and subcortical tissues from 5tt image
-    mrconvert --coord 3 2 -axes 0,1,2 "${freesurfer_5tt}" "${dmri_dir}/5tt-white_matter.mif"
-    mrconvert --coord 3 1 -axes 0,1,2 "${freesurfer_5tt}" "${dmri_dir}/5tt-subcortical.mif"
-    # add tissues together
-    mrmath "${dmri_dir}/5tt-white_matter.mif" "${dmri_dir}/5tt-subcortical.mif" \
-           sum "${dmri_dir}/5tt-wm+sc.mif"
-    # binarise to create the trim mask
-    mrcalc "${dmri_dir}/5tt-wm+sc.mif" 0 -gt 1 0 -if "${trim_mask}"
 fi
 
 
@@ -275,7 +249,7 @@ streamlines="100K" # testing with a smaller value: for 100K seeds, it took ~40se
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
-    tckgen -seed_image "${gmwm_seed}" -mask "${trim_mask}" -seeds "${streamlines}" \
+    tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
            -maxlength 250 -cutoff 0.1 -nthreads 1 "${wm_fod_norm}" "${tracks}"
            # extra options to check??? -act -crop_at_gmwmi -seed_gmwmi -trials -step -seeds
 fi
