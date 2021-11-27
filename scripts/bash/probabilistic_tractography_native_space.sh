@@ -46,7 +46,7 @@ dwi_mif="${dmri_dir}/dwi.mif"
 if [ ! -f ${dwi_mif} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Converting dwi image to mif"
     mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
-              -fslgrad "${dmri_dir}/bvecs" "${dmri_dir}/bvals" \
+              -fslgrad "${dmri_dir}/data.eddy_rotated_bvecs" "${dmri_dir}/bvals" \
               -datatype float32 -strides 0,0,0,1
 fi
 
@@ -84,8 +84,8 @@ if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     maskfilter -npass 3 "${dwi_mask}" dilate "${dwi_mask_dilated}"
 
     # Now, perfoming CSD with the dilated mask
-    dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" \
-                     "${wm_txt}" "${wm_fod}" "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}"
+    dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" "${wm_txt}" "${wm_fod}" \
+            "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}" -nthreads 0
 fi
 
 
