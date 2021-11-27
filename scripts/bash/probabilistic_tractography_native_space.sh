@@ -71,7 +71,7 @@ if [ ! -f ${wm_txt} ] || [ ! -f ${gm_txt} ] || [ ! -f ${csf_txt} ]; then
 fi
 
 
-# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~12min)
+# Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution (~33min)
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
@@ -252,6 +252,13 @@ if [ ! -f ${tracks} ]; then
     tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
            -maxlength 250 -cutoff 0.1 -nthreads 0 "${wm_fod_norm}" "${tracks}" -power 0.5 \
            -info -samples 3
+fi
+
+# computing SIFT2 weightings ( for 100K)
+sift_weights="${dmri_dir}/sift_weights.txt"
+if [ ! -f ${sift_weights} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
+    tcksift2 -nthreads 0 -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # Tractography considerations:
