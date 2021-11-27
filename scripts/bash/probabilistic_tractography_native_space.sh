@@ -33,6 +33,8 @@ temporary_dir="${main_dir}/data/temporary"
 fsaverage_dir="${template_dir}/freesurfer/fsaverage"
 dmri_dir="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/dMRI/dMRI"
 
+threading="-nthreads 0"
+
 echo -e "${GREEN}[INFO]${NC} `date`: Starting tractography for: ${ukb_subject_id}_${ukb_instance}"
 
 # Create a temporary directory to store files
@@ -47,11 +49,11 @@ if [ ! -f ${dwi_mif} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Converting dwi image to mif"
     mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
               -fslgrad "${dmri_dir}/data.eddy_rotated_bvecs" "${dmri_dir}/bvals" \
-              -datatype float32 -strides 0,0,0,1
+              -datatype float32 -strides 0,0,0,1 ${threading} -info
 fi
 
 
-# Estimate the response function using the dhollander method (~50sec)
+# Estimate the response function using the dhollander method (~4min)
 ##########################################################################################
 # RS: As discussed, would be preferable to have used a group average response function,
 # especially if the ODF images are to be provided to the community as that could result
@@ -67,7 +69,7 @@ csf_txt="${dmri_dir}/csf.txt"
 if [ ! -f ${wm_txt} ] || [ ! -f ${gm_txt} ] || [ ! -f ${csf_txt} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Estimation of response function using dhollander"
     dwi2response dhollander "${dwi_mif}" "${wm_txt}" "${gm_txt}" "${csf_txt}" \
-                            -voxels "${dmri_dir}/voxels.mif"
+                            -voxels "${dmri_dir}/voxels.mif" ${threading} -info
 fi
 
 
@@ -81,11 +83,11 @@ if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 3 "${dwi_mask}" dilate "${dwi_mask_dilated}"
+    maskfilter -npass 3 "${dwi_mask}" dilate "${dwi_mask_dilated}" ${threading} -info
 
     # Now, perfoming CSD with the dilated mask
     dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" "${wm_txt}" "${wm_fod}" \
-            "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}" -nthreads 0
+            "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}" ${threading} -info
 fi
 
 
@@ -97,16 +99,16 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
     echo -e "${GREEN}[INFO]${NC} `date`: Running multi-tissue log-domain intensity normalisation"
     
     # First, creating an eroded brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/5)
-    maskfilter -npass 1 "${dwi_mask}" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
+    maskfilter -npass 1 "${dwi_mask}" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz" ${threading} -info
 
     # Now, perfoming mtnormalise
     mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
-                "${csf_fod_norm}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz"
+                "${csf_fod_norm}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz" ${threading} -info
 fi
 
 
 
-# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~30sec)
+# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~100sec)
 # Q:Shall we use FSL FAST's output or Freesurfer or the new hsvs? --> freesurfer is faster
 #####################################################################################
 # RS: 5ttgen freesurfer is probably the best choice given limited computational resources.
@@ -149,10 +151,10 @@ if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
     # First create the 5tt image
     5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
-                      "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp
+                      "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp ${threading} -info
 
     # Next generate the boundary ribbon
-    5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}"
+    5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}" ${threading} -info
 
     # Coregistering the Diffusion and Anatomical Images
     # Check these links for further info:
@@ -162,23 +164,24 @@ if [ ! -f ${gmwm_seed} ]; then
     # T1 and dMRI images are in different spaces, hence we'll use a rigid body transformation.
 
     # Generate contrast matched target images for coregistration
-    dwiextract "${dwi_mif}" -bzero - | mrcalc - 0.0 -max - | mrmath - mean -axis 3 "${dwi_meanbzero}"
-    mrcalc 1 "${dwi_meanbzero}" -div "${dwi_mask}" -mult - | mrhistmatch nonlinear - "${T1_brain}" \
-           "${dwi_pseudoT1}" -mask_input "${dwi_mask}" -mask_target "${T1_brain_mask}"
-    mrcalc 1 "${T1_brain}" -div "${T1_brain_mask}" -mult - | mrhistmatch nonlinear - "${dwi_meanbzero}" \
-           "${T1_pseudobzero}" -mask_input "${T1_brain_mask}" -mask_target "${dwi_mask}"
+    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrcalc ${threading} -info - 0.0 -max - \
+               | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
+    mrcalc ${threading} -info 1 "${dwi_meanbzero}" -div "${dwi_mask}" -mult - | mrhistmatch ${threading} \
+           -info nonlinear - "${T1_brain}" "${dwi_pseudoT1}" -mask_input "${dwi_mask}" -mask_target "${T1_brain_mask}"
+    mrcalc ${threading} -info 1 "${T1_brain}" -div "${T1_brain_mask}" -mult - | mrhistmatch ${threading} \
+           -info nonlinear - "${dwi_meanbzero}" "${T1_pseudobzero}" -mask_input "${T1_brain_mask}" -mask_target "${dwi_mask}"
 
     # Perform rigid body registration
     mrregister "${dwi_pseudoT1}" "${T1_brain}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
-               -rigid "${transform_pT1_T1}"
+               -rigid "${transform_pT1_T1}" ${threading} -info
     mrregister "${dwi_meanbzero}" "${T1_pseudobzero}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
-               -rigid "${transform_b0_pb0}"
-    transformcalc "${transform_pT1_T1}" "${transform_b0_pb0}" average "${transform_DWI_T1}"
+               -rigid "${transform_b0_pb0}" ${threading} -info
+    transformcalc "${transform_pT1_T1}" "${transform_b0_pb0}" average "${transform_DWI_T1}" ${threading} -info
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
-    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse
-    mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse
-    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse
+    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
 fi
 
 
@@ -250,15 +253,15 @@ tracks="${dmri_dir}/tracks_${streamlines}.tck"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
     tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
-           -maxlength 250 -cutoff 0.1 -nthreads 0 "${wm_fod_norm}" "${tracks}" -power 0.5 \
+           -maxlength 250 -cutoff 0.1 ${threading} "${wm_fod_norm}" "${tracks}" -power 0.5 \
            -info -samples 3
 fi
 
-# computing SIFT2 weightings ( for 100K)
+# computing SIFT2 weightings (~150sec for 100K, however may not scale linearly needs to be tested on more streamlines)
 sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
-    tcksift2 -nthreads 0 -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
+    tcksift2 ${threading} -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # Tractography considerations:
