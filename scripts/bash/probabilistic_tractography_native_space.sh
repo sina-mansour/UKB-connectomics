@@ -137,13 +137,16 @@ fi
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
 dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
+dwi_meanbzero_nomax="${dmri_dir}/dwi_meanbzero_nomax.mif"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
+WM_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_fast/T1_brain_pve_2.nii.gz"
 T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
 T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
 dwi_pseudoT1="${dmri_dir}/dwi_pseudoT1.mif"
 T1_pseudobzero="${dmri_dir}/T1_pseudobzero.mif"
 transform_pT1_T1="${dmri_dir}/transform_pT1_T1.txt"
 transform_b0_pb0="${dmri_dir}/transform_b0_pb0.txt"
+transform_b0_T1="${dmri_dir}/transform_b0_T1.txt"
 transform_DWI_T1="${dmri_dir}/transform_DWI_T1.txt"
 gmwm_seed_T1="${dmri_dir}/gmwm_seed_T1.mif"
 gmwm_seed="${dmri_dir}/gmwm_seed.mif"
@@ -179,65 +182,89 @@ if [ ! -f ${gmwm_seed} ]; then
     transformcalc "${transform_pT1_T1}" "${transform_b0_pb0}" average "${transform_DWI_T1}" ${threading} -info
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
-    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
     mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    # mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    # mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+
+    # Ideas for a better registration:
+    # dwi to T2, dwi to T1 without recolouring
+    # testing alternatives:
+
+    # The averaged contrast matched
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_avg.mif" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_avg.mif" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+
+    # Different single contrast matchings (only one of the averaged transforms)
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_pT1toT1.mif" -linear "${transform_pT1_T1}" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_pT1toT1.mif" -linear "${transform_pT1_T1}" -inverse ${threading} -info
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_b0topb0.mif" -linear "${transform_b0_pb0}" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_b0topb0.mif" -linear "${transform_b0_pb0}" -inverse ${threading} -info
+
+    # The following direct b0 T1 registration failed:
+    # mrregister: [ERROR] Linear registration failed, transformation parameters are NaN.
+    # # direct registration to T1 without contrast matching
+    # mrregister "${dwi_meanbzero}" "${T1_brain}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
+    #            -rigid "${transform_b0_T1}" ${threading} -info
+    # mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_b0toT1.mif" -linear "${transform_b0_T1}" -inverse ${threading} -info
+    # mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_b0toT1.mif" -linear "${transform_b0_T1}" -inverse ${threading} -info
+
+    # implementing the idea here: https://andysbrainbook.readthedocs.io/en/latest/MRtrix/MRtrix_Course/MRtrix_06_TissueBoundary.html
+    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero_nomax}"
+    mrconvert "${dwi_meanbzero_nomax}" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" ${threading} -info
+    mrconvert "${freesurfer_5tt_T1}" "${dmri_dir}/5tt.T1.freesurfer.nii.gz" ${threading} -info
+    fslroi "${dmri_dir}/5tt.T1.freesurfer.nii.gz" "${dmri_dir}/5tt_vol0.T1.freesurfer.nii.gz" 0 1
+    flirt -in "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" -ref "${dmri_dir}/5tt_vol0.T1.freesurfer.nii.gz" \
+          -interp nearestneighbour -dof 6 -omat "${dmri_dir}/diff2struct_fsl.mat"
+    transformconvert "${dmri_dir}/diff2struct_fsl.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
+                     "${dmri_dir}/5tt.T1.freesurfer.nii.gz" flirt_import "${dmri_dir}/diff2struct_mrtrix.txt"
+    
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_abb.mif" -linear "${dmri_dir}/diff2struct_mrtrix.txt" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_abb.mif" -linear "${dmri_dir}/diff2struct_mrtrix.txt" -inverse ${threading} -info
+
+    # an alternative to command above (check links below)
+    # https://community.mrtrix.org/t/aligning-dwi-to-t1-using-flirt/2388
+    # https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT
+    mrcalc ${threading} -info "${dwi_meanbzero_nomax}" "${dwi_mask}" -mult "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz"
+    flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
+          -cost normmi -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m1.mat"
+    transformconvert "${dmri_dir}/diff2struct_fsl_m1.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
+                     "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m1_mrtrix.txt"
+    
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m1.mif" -linear "${dmri_dir}/diff2struct_m1_mrtrix.txt" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m1.mif" -linear "${dmri_dir}/diff2struct_m1_mrtrix.txt" -inverse ${threading} -info
+
+    # # finally, let's try the BBR cost function:
+    # flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
+    #       -cost bbr -wmseg "${WM_mask}" -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m2.mat"
+    # transformconvert "${dmri_dir}/diff2struct_fsl_m2.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
+    #                  "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m2_mrtrix.txt"
+    
+    # mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m2.mif" -linear "${dmri_dir}/diff2struct_m2_mrtrix.txt" -inverse ${threading} -info
+    # mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m2.mif" -linear "${dmri_dir}/diff2struct_m2_mrtrix.txt" -inverse ${threading} -info
+
+    # simple flirt without the normmi cost funciton
+    mrcalc ${threading} -info "${dwi_meanbzero_nomax}" "${dwi_mask}" -mult "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz"
+    flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
+          -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m3.mat"
+    transformconvert "${dmri_dir}/diff2struct_fsl_m3.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
+                     "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m3_mrtrix.txt"
+    
+    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m3.mif" -linear "${dmri_dir}/diff2struct_m3_mrtrix.txt" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m3.mif" -linear "${dmri_dir}/diff2struct_m3_mrtrix.txt" -inverse ${threading} -info
+
 fi
 
 
 # Create streamlines
-# - 1 million streams are seeded using -seeds
-# - no ACT
 # - maxlength is set to 250mm as the default option results in streamlines
 #   being at most 100 * voxelsize which will be 200mm and may result in loss
 #   of long streamlines for UKB data resolution
-# - FOD amplitude cutoff is set to 0.1 (shal be discussed)
-# - trim mask is used to crop streamline endpoints more precisely as they
-#   cross white matter - cortical gray matter interface
 # - not using multiple threads to speed-up (as it might cause lesser jobs accepted in the queue)
 #############################################################################################
 # RS: 
-# - Default FOD amplitude cutoff is a compromise knowing that users could be providing either
-#   single-tissue or multi-tissue WM ODFs. Given the use of multi-tissue CSD here, as well as
-#   the use of ACT (or comparable masks), probably safe to reduce this to 0.05
-#   (note that if ACT is used, the default FOD cutoff is automatically cut in half, in which
-#   case there would be no need to use the command-line option)
-# - The output of 5tt2gmwmi is generally intended to be used in conjunction with -seed_gmwmi.
-#   Providing that image via -seed_image will result in a large proportion of candidate seeds
-#   being rejected due to being in cortical GM in the case of ACT or outside of the mask image
-#   in the case of not using ACT. You should see if using -seed_gmwmi that the discrepancy between
-#   seed count and streamline count should decrease.
-# - If quantification of Fibre Bundle Capacity (FBC) is a priority, then I would usually
-#   advocate the use of -seed_dynamic. This would however incur the cost of FOD segmentation
-#   (which is additionally performed within SIFT(2); preferable would be to do that segmentation
-#   once and then load those pre-computed results in both instances), and it would potentially
-#   confound the interpretation of raw streamline count measures (there is some sense of known
-#   biases present in such for both homogeneous WM and GM-WM interface seeding, whereas for
-#   dynamic seeding the raw streamline count becomes slightly more comparable to FBC).
-# - -nthreads 1 will actually result in the use of 2 threads here: there is one dedicated thread
-#   for writing to the track file, and you are requesting one worker thread for doing the tracking
-#   itself. If you genuinely do not want the command to spawn any threads at all, use -nthreads 0.
-#   (This will also remove the need for locking as generated streamline data are passed from one
-#   thread to another)
-# - -trials isn't something that would typically be modified
-# - The other option to consider is -power. One of the reasons why iFOD2 remains unpublished is
-#   because we still don't have a robust answer for what this should be. But over and above that,
-#   even within the logic that was used to derive the current default value, there is still an
-#   error. The default is (1 / samples), whereas it should actually be (1 / (samples-1)).
-#   I would suggest running with -power 0.333333 and see if it changes execution speed substantially;
-#   it will slightly reduce the magnitude of the probabilistic "wiggle".
 # - In addition to testing execution speed between iFOD1 and iFOD2, you could also try iFOD2 with
 #   -samples 3 (and possibly also then with -power 0.5 as per point above), and see the extent to
 #   which that improves execution speed.
-# - Ideally I would like to have this algorithm:
-#   https://github.com/MRtrix3/mrtrix3/issues/2160
-#   However I do believe that it runs slower than iFOD2.
-#   I'm not sure that I'll be able to find the time to implement it, but it's a great little
-#   project for e.g. a Masters internship in CompSci.
-# - For now, run with -info to get additional statistics on tractography outcomes (and this will be
-#   further augmented if ACT is used). In the future, rather than attempting to parse the stderr
-#   output here, I could add a command-line option to tckgen that would write these statistics
-#   to a file for easier access.
 # - Theoretically, you could do a combination of GM-WM interface seeding and homogeneous WM seeding.
 #   You could then have connectomes with half the streamline count using data from each individually,
 #   and connectomes using the concatenation of the two tractograms, which would potentially somewhat
@@ -266,7 +293,6 @@ fi
 
 # Tractography considerations:
 # IFOD1 vs. IFOD2
-# It might be better to use -seeds
 # Mean FA, MD, tensor eigenvecs, length, mean 5tt, diffusion kurtosis fit, freewater,
 
 
