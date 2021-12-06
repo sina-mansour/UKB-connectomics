@@ -137,19 +137,14 @@ fi
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
 dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
-dwi_meanbzero_nomax="${dmri_dir}/dwi_meanbzero_nomax.mif"
+dwi_meanbzero_masked_nii="${dmri_dir}/dwi_meanbzero_masked.nii.gz"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
-WM_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_fast/T1_brain_pve_2.nii.gz"
 T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
 T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
-dwi_pseudoT1="${dmri_dir}/dwi_pseudoT1.mif"
-T1_pseudobzero="${dmri_dir}/T1_pseudobzero.mif"
-transform_pT1_T1="${dmri_dir}/transform_pT1_T1.txt"
-transform_b0_pb0="${dmri_dir}/transform_b0_pb0.txt"
-transform_b0_T1="${dmri_dir}/transform_b0_T1.txt"
-transform_DWI_T1="${dmri_dir}/transform_DWI_T1.txt"
 gmwm_seed_T1="${dmri_dir}/gmwm_seed_T1.mif"
 gmwm_seed="${dmri_dir}/gmwm_seed.mif"
+transform_DWI_T1_FSL="${dmri_dir}/diff2struct_fsl.txt"
+transform_DWI_T1="${dmri_dir}/diff2struct_mrtrix.txt"
 if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
     # First create the 5tt image
@@ -164,93 +159,24 @@ if [ ! -f ${gmwm_seed} ]; then
     # https://github.com/sina-mansour/UKB-connectomics/issues/7
     # https://github.com/BIDS-Apps/MRtrix3_connectome/blob/0.5.0/mrtrix3_connectome.py#L1625-L1707
     # https://andysbrainbook.readthedocs.io/en/latest/MRtrix/MRtrix_Course/MRtrix_06_TissueBoundary.html
+    # https://community.mrtrix.org/t/aligning-dwi-to-t1-using-flirt/2388
+    # https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT
     # T1 and dMRI images are in different spaces, hence we'll use a rigid body transformation.
 
-    # Generate contrast matched target images for coregistration
-    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrcalc ${threading} -info - 0.0 -max - \
-               | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
-    mrcalc ${threading} -info 1 "${dwi_meanbzero}" -div "${dwi_mask}" -mult - | mrhistmatch ${threading} \
-           -info nonlinear - "${T1_brain}" "${dwi_pseudoT1}" -mask_input "${dwi_mask}" -mask_target "${T1_brain_mask}"
-    mrcalc ${threading} -info 1 "${T1_brain}" -div "${T1_brain_mask}" -mult - | mrhistmatch ${threading} \
-           -info nonlinear - "${dwi_meanbzero}" "${T1_pseudobzero}" -mask_input "${T1_brain_mask}" -mask_target "${dwi_mask}"
+    # Generate target images for coregistration
+    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
+    mrcalc ${threading} -info "${dwi_meanbzero}" "${dwi_mask}" -mult "${dwi_meanbzero_masked_nii}"
 
     # Perform rigid body registration
-    mrregister "${dwi_pseudoT1}" "${T1_brain}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
-               -rigid "${transform_pT1_T1}" ${threading} -info
-    mrregister "${dwi_meanbzero}" "${T1_pseudobzero}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
-               -rigid "${transform_b0_pb0}" ${threading} -info
-    transformcalc "${transform_pT1_T1}" "${transform_b0_pb0}" average "${transform_DWI_T1}" ${threading} -info
+    flirt -in "${dwi_meanbzero_masked_nii}" -ref "${T1_brain}" \
+          -cost normmi -dof 6 -omat "${transform_DWI_T1_FSL}"
+    transformconvert "${transform_DWI_T1_FSL}" "${dwi_meanbzero_masked_nii}" \
+                     "${T1_brain}" flirt_import "${transform_DWI_T1}"
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
     mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    # mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    # mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-
-    # Ideas for a better registration:
-    # dwi to T2, dwi to T1 without recolouring
-    # testing alternatives:
-
-    # The averaged contrast matched
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_avg.mif" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_avg.mif" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-
-    # Different single contrast matchings (only one of the averaged transforms)
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_pT1toT1.mif" -linear "${transform_pT1_T1}" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_pT1toT1.mif" -linear "${transform_pT1_T1}" -inverse ${threading} -info
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_b0topb0.mif" -linear "${transform_b0_pb0}" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_b0topb0.mif" -linear "${transform_b0_pb0}" -inverse ${threading} -info
-
-    # The following direct b0 T1 registration failed:
-    # mrregister: [ERROR] Linear registration failed, transformation parameters are NaN.
-    # # direct registration to T1 without contrast matching
-    # mrregister "${dwi_meanbzero}" "${T1_brain}" -type rigid -mask1 "${dwi_mask}" -mask2 "${T1_brain_mask}" \
-    #            -rigid "${transform_b0_T1}" ${threading} -info
-    # mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_b0toT1.mif" -linear "${transform_b0_T1}" -inverse ${threading} -info
-    # mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_b0toT1.mif" -linear "${transform_b0_T1}" -inverse ${threading} -info
-
-    # implementing the idea here: https://andysbrainbook.readthedocs.io/en/latest/MRtrix/MRtrix_Course/MRtrix_06_TissueBoundary.html
-    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero_nomax}"
-    mrconvert "${dwi_meanbzero_nomax}" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" ${threading} -info
-    mrconvert "${freesurfer_5tt_T1}" "${dmri_dir}/5tt.T1.freesurfer.nii.gz" ${threading} -info
-    fslroi "${dmri_dir}/5tt.T1.freesurfer.nii.gz" "${dmri_dir}/5tt_vol0.T1.freesurfer.nii.gz" 0 1
-    flirt -in "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" -ref "${dmri_dir}/5tt_vol0.T1.freesurfer.nii.gz" \
-          -interp nearestneighbour -dof 6 -omat "${dmri_dir}/diff2struct_fsl.mat"
-    transformconvert "${dmri_dir}/diff2struct_fsl.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
-                     "${dmri_dir}/5tt.T1.freesurfer.nii.gz" flirt_import "${dmri_dir}/diff2struct_mrtrix.txt"
-    
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_abb.mif" -linear "${dmri_dir}/diff2struct_mrtrix.txt" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_abb.mif" -linear "${dmri_dir}/diff2struct_mrtrix.txt" -inverse ${threading} -info
-
-    # an alternative to command above (check links below)
-    # https://community.mrtrix.org/t/aligning-dwi-to-t1-using-flirt/2388
-    # https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT
-    mrcalc ${threading} -info "${dwi_meanbzero_nomax}" "${dwi_mask}" -mult "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz"
-    flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
-          -cost normmi -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m1.mat"
-    transformconvert "${dmri_dir}/diff2struct_fsl_m1.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
-                     "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m1_mrtrix.txt"
-    
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m1.mif" -linear "${dmri_dir}/diff2struct_m1_mrtrix.txt" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m1.mif" -linear "${dmri_dir}/diff2struct_m1_mrtrix.txt" -inverse ${threading} -info
-
-    # # finally, let's try the BBR cost function:
-    # flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
-    #       -cost bbr -wmseg "${WM_mask}" -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m2.mat"
-    # transformconvert "${dmri_dir}/diff2struct_fsl_m2.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
-    #                  "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m2_mrtrix.txt"
-    
-    # mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m2.mif" -linear "${dmri_dir}/diff2struct_m2_mrtrix.txt" -inverse ${threading} -info
-    # mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m2.mif" -linear "${dmri_dir}/diff2struct_m2_mrtrix.txt" -inverse ${threading} -info
-
-    # simple flirt without the normmi cost funciton
-    mrcalc ${threading} -info "${dwi_meanbzero_nomax}" "${dwi_mask}" -mult "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz"
-    flirt -in "${dmri_dir}/dwi_meanbzero_nomax_masked.nii.gz" -ref "${T1_brain}" \
-          -dof 6 -omat "${dmri_dir}/diff2struct_fsl_m3.mat"
-    transformconvert "${dmri_dir}/diff2struct_fsl_m3.mat" "${dmri_dir}/dwi_meanbzero_nomax.nii.gz" \
-                     "${T1_brain}" flirt_import "${dmri_dir}/diff2struct_m3_mrtrix.txt"
-    
-    mrtransform "${T1_brain}" "${dmri_dir}/T1_brain_dwi_m3.mif" -linear "${dmri_dir}/diff2struct_m3_mrtrix.txt" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${dmri_dir}/gmwm_seed_m3.mif" -linear "${dmri_dir}/diff2struct_m3_mrtrix.txt" -inverse ${threading} -info
+    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
 
 fi
 
