@@ -12,3 +12,6 @@ __pycache__/
 
 # ignore fsaverage freesurfer files
 /data/templates/freesurfer/fsaverage/
+
+# ignore installed software
+lib/
