@@ -26,6 +26,7 @@ ukb_subjects_dir=$2
 ukb_subject_id=$3
 ukb_instance=$4
 
+mrtrix_dir="${main_dir}/lib/mrtrix3/bin"
 script_dir="${main_dir}/scripts"
 template_dir="${main_dir}/data/templates"
 temporary_dir="${main_dir}/data/temporary"
@@ -158,6 +159,7 @@ fi
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
+T1_first="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_first/"
 T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
 T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
 gmwm_seed_T1="${dmri_dir}/gmwm_seed_T1.mif"
@@ -167,8 +169,12 @@ transform_DWI_T1="${dmri_dir}/diff2struct_mrtrix.txt"
 if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
     # First create the 5tt image
-    5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
-                      "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp ${threading} -info
+    # 5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
+    #                   "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp ${threading} -info
+    # Testing the new freesurfer -first option
+    ${mrtrix_dir}/5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
+                         -first ${T1_first} "${freesurfer_5tt_T1}" \
+                         -nocrop -sgm_amyg_hipp ${threading} -info
 
     # Next generate the boundary ribbon
     5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}" ${threading} -info
