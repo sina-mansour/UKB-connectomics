@@ -64,29 +64,15 @@ if [ ! -f ${dwi_meanbzero} ]; then
 fi
 
 # Then, create a dwi brain mask (the provided bedpostX mask is not that accurate) (~2sec)
-dwi_mask="${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz"
 dwi_meanbzero_brain="${dmri_dir}/dwi_meanbzero_brain.nii.gz"
 dwi_meanbzero_brain_mask="${dmri_dir}/dwi_meanbzero_brain_mask.nii.gz"
-# dwi_bias="${dmri_dir}/dwi_bias.mif"
-# dwi_biascorrected="${dmri_dir}/dwi_biascorrected.mif"
 if [ ! -f ${dwi_meanbzero_brain_mask} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Computing dwi brain mask"
 
-    # Approach 1: dwi2mask (this ended up leaving a hole in the subcortical region, although being more accurate in other regions)
-    # https://community.mrtrix.org/t/dwi2mask-holes-in-mask-images/484/4
-
-    # # First, dwibiascorrect
-    # dwibiascorrect -ants -ants.b [150,3] -ants.c [10000,0.0] -ants.s 4 "${dwi_mif}" "${dwi_biascorrected}" ${threading} -info -mask "${dwi_mask}" -bias "${dwi_bias}"
-
-    # # Then recompute the brain mask
-    # dwi2mask ${threading} -info -clean_scale 2 "${dwi_biascorrected}" "${dwi_meanbzero_brain_mask}"
-
-    # Approach 2: using FSL BET
+    # Approach 2: using FSL BET (check https://github.com/sina-mansour/UKB-connectomics/commit/463b6553b5acd63f14a45ef7120145998e0a5139)
 
     # skull stripping to get a mask
     bet "${dwi_meanbzero_nii}" "${dwi_meanbzero_brain}" -m -R -f 0.2 -g -0.05
-
-    # Approach 3: using the normalised FOD to delineate brain borders
 fi
 
 
@@ -114,12 +100,12 @@ fi
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
-dwi_mask_dilated="${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
+dwi_mask_dilated="${dmri_dir}/dwi_meanbzero_brain_mask_dilated_2.nii.gz"
 if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 3 "${dwi_mask}" dilate "${dwi_mask_dilated}" ${threading} -info
+    maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" dilate "${dwi_mask_dilated}" ${threading} -info
 
     # Now, perfoming CSD with the dilated mask
     dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" "${wm_txt}" "${wm_fod}" \
@@ -135,50 +121,15 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
     echo -e "${GREEN}[INFO]${NC} `date`: Running multi-tissue log-domain intensity normalisation"
     
     # First, creating an eroded brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/5)
-    maskfilter -npass 1 "${dwi_mask}" erode "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz" ${threading} -info
+    maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" erode "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
 
     # Now, perfoming mtnormalise
     mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
-                "${csf_fod_norm}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz" ${threading} -info
+                "${csf_fod_norm}" -mask "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
 fi
 
-# # Then, create a dwi brain mask (the provided bedpostX mask is not that accurate) (~2sec)
-# dwi_meanbzero_fodnorm_brain="${dmri_dir}/dwi_meanbzero_fodnorm_brain.nii.gz"
-# dwi_fodnorm_brain_mask="${dmri_dir}/dwi_fodnorm_brain_mask.nii.gz"
-# if [ ! -f ${dwi_fodnorm_brain_mask} ]; then
-#     echo -e "${GREEN}[INFO]${NC} `date`: Computing dwi brain mask"
 
-#     # Approach 1: dwi2mask (this ended up leaving a hole in the subcortical region, although being more accurate in other regions)
-#     # https://community.mrtrix.org/t/dwi2mask-holes-in-mask-images/484/4
-
-#     # # First, dwibiascorrect
-#     # dwibiascorrect -ants -ants.b [150,3] -ants.c [10000,0.0] -ants.s 4 "${dwi_mif}" "${dwi_biascorrected}" ${threading} -info -mask "${dwi_mask}" -bias "${dwi_bias}"
-
-#     # # Then recompute the brain mask
-#     # dwi2mask ${threading} -info -clean_scale 2 "${dwi_biascorrected}" "${dwi_meanbzero_brain_mask}"
-
-#     # Approach 2: using FSL BET
-
-#     # # skull stripping to get a mask
-#     # bet "${dwi_meanbzero_nii}" "${dwi_meanbzero_brain}" -m -R -f 0.2 -g -0.05
-
-#     # Approach 3: using the normalised FOD to delineate brain borders
-#     TISSUESUM_THRESHOLD=0.1
-#     mrconvert ${threading} -info "${wm_fod_norm}" -coord 3 0 -  | \
-#     mrmath ${threading} -info - "${gm_fod_norm}" "${csf_fod_norm}" sum - | \
-#     mrthreshold ${threading} -info - -abs $TISSUESUM_THRESHOLD - | \
-#     maskfilter ${threading} -info - connect -largest - | \
-#     mrcalc 1 - -sub - -datatype bit | \
-#     maskfilter - connect -largest - | \
-#     mrcalc 1 - -sub - -datatype bit | \
-#     maskfilter - clean - | \
-#     maskfilter - -npass 1 dilate "${dwi_fodnorm_brain_mask}"
-#     mrcalc "${dwi_meanbzero_nii}" "${dwi_fodnorm_brain_mask}" -mult "${dwi_meanbzero_fodnorm_brain}"
-# fi
-
-
-
-# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~100sec)
+# Create a mask of white matter gray matter interface using 5 tissue type segmentation (~70sec)
 # Q:Shall we use FSL FAST's output or Freesurfer or the new hsvs? --> freesurfer is faster
 #####################################################################################
 # RS: 5ttgen freesurfer is probably the best choice given limited computational resources.
