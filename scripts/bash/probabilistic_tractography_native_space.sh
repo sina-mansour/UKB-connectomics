@@ -52,6 +52,43 @@ if [ ! -f ${dwi_mif} ]; then
               -datatype float32 -strides 0,0,0,1 ${threading} -info
 fi
 
+# Then, extract mean B0 image (~1sec)
+dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
+dwi_meanbzero_nii="${dmri_dir}/dwi_meanbzero.nii.gz"
+if [ ! -f ${dwi_meanbzero} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Extracting mean B0 image"
+
+    # extract mean b0
+    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
+    mrconvert "${dwi_meanbzero}" "${dwi_meanbzero_nii}" ${threading} -info
+fi
+
+# Then, create a dwi brain mask (the provided bedpostX mask is not that accurate) (~2sec)
+dwi_mask="${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz"
+dwi_meanbzero_brain="${dmri_dir}/dwi_meanbzero_brain.nii.gz"
+dwi_meanbzero_brain_mask="${dmri_dir}/dwi_meanbzero_brain_mask.nii.gz"
+# dwi_bias="${dmri_dir}/dwi_bias.mif"
+# dwi_biascorrected="${dmri_dir}/dwi_biascorrected.mif"
+if [ ! -f ${dwi_meanbzero_brain_mask} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing dwi brain mask"
+
+    # Approach 1: dwi2mask (this ended up leaving a hole in the subcortical region, although being more accurate in other regions)
+    # https://community.mrtrix.org/t/dwi2mask-holes-in-mask-images/484/4
+
+    # # First, dwibiascorrect
+    # dwibiascorrect -ants -ants.b [150,3] -ants.c [10000,0.0] -ants.s 4 "${dwi_mif}" "${dwi_biascorrected}" ${threading} -info -mask "${dwi_mask}" -bias "${dwi_bias}"
+
+    # # Then recompute the brain mask
+    # dwi2mask ${threading} -info -clean_scale 2 "${dwi_biascorrected}" "${dwi_meanbzero_brain_mask}"
+
+    # Approach 2: using FSL BET
+
+    # skull stripping to get a mask
+    bet "${dwi_meanbzero_nii}" "${dwi_meanbzero_brain}" -m -R -f 0.2 -g -0.05
+
+    # Approach 3: using the normalised FOD to delineate brain borders
+fi
+
 
 # Estimate the response function using the dhollander method (~4min)
 ##########################################################################################
@@ -77,7 +114,6 @@ fi
 wm_fod="${dmri_dir}/wmfod.mif"
 gm_fod="${dmri_dir}/gmfod.mif"
 csf_fod="${dmri_dir}/csffod.mif"
-dwi_mask="${dmri_dir}.bedpostX/nodif_brain_mask.nii.gz"
 dwi_mask_dilated="${dmri_dir}.bedpostX/nodif_brain_mask_dilated_3.nii.gz"
 if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
@@ -105,6 +141,40 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
     mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
                 "${csf_fod_norm}" -mask "${dmri_dir}.bedpostX/nodif_brain_mask_eroded_1.nii.gz" ${threading} -info
 fi
+
+# # Then, create a dwi brain mask (the provided bedpostX mask is not that accurate) (~2sec)
+# dwi_meanbzero_fodnorm_brain="${dmri_dir}/dwi_meanbzero_fodnorm_brain.nii.gz"
+# dwi_fodnorm_brain_mask="${dmri_dir}/dwi_fodnorm_brain_mask.nii.gz"
+# if [ ! -f ${dwi_fodnorm_brain_mask} ]; then
+#     echo -e "${GREEN}[INFO]${NC} `date`: Computing dwi brain mask"
+
+#     # Approach 1: dwi2mask (this ended up leaving a hole in the subcortical region, although being more accurate in other regions)
+#     # https://community.mrtrix.org/t/dwi2mask-holes-in-mask-images/484/4
+
+#     # # First, dwibiascorrect
+#     # dwibiascorrect -ants -ants.b [150,3] -ants.c [10000,0.0] -ants.s 4 "${dwi_mif}" "${dwi_biascorrected}" ${threading} -info -mask "${dwi_mask}" -bias "${dwi_bias}"
+
+#     # # Then recompute the brain mask
+#     # dwi2mask ${threading} -info -clean_scale 2 "${dwi_biascorrected}" "${dwi_meanbzero_brain_mask}"
+
+#     # Approach 2: using FSL BET
+
+#     # # skull stripping to get a mask
+#     # bet "${dwi_meanbzero_nii}" "${dwi_meanbzero_brain}" -m -R -f 0.2 -g -0.05
+
+#     # Approach 3: using the normalised FOD to delineate brain borders
+#     TISSUESUM_THRESHOLD=0.1
+#     mrconvert ${threading} -info "${wm_fod_norm}" -coord 3 0 -  | \
+#     mrmath ${threading} -info - "${gm_fod_norm}" "${csf_fod_norm}" sum - | \
+#     mrthreshold ${threading} -info - -abs $TISSUESUM_THRESHOLD - | \
+#     maskfilter ${threading} -info - connect -largest - | \
+#     mrcalc 1 - -sub - -datatype bit | \
+#     maskfilter - connect -largest - | \
+#     mrcalc 1 - -sub - -datatype bit | \
+#     maskfilter - clean - | \
+#     maskfilter - -npass 1 dilate "${dwi_fodnorm_brain_mask}"
+#     mrcalc "${dwi_meanbzero_nii}" "${dwi_fodnorm_brain_mask}" -mult "${dwi_meanbzero_fodnorm_brain}"
+# fi
 
 
 
@@ -136,8 +206,6 @@ fi
 #####################################################################################
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
-dwi_meanbzero="${dmri_dir}/dwi_meanbzero.mif"
-dwi_meanbzero_masked_nii="${dmri_dir}/dwi_meanbzero_masked.nii.gz"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
 T1_brain_dwi="${dmri_dir}/T1_brain_dwi.mif"
 T1_brain_mask="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain_mask.nii.gz"
@@ -163,14 +231,10 @@ if [ ! -f ${gmwm_seed} ]; then
     # https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT
     # T1 and dMRI images are in different spaces, hence we'll use a rigid body transformation.
 
-    # Generate target images for coregistration
-    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
-    mrcalc ${threading} -info "${dwi_meanbzero}" "${dwi_mask}" -mult "${dwi_meanbzero_masked_nii}"
-
     # Perform rigid body registration
-    flirt -in "${dwi_meanbzero_masked_nii}" -ref "${T1_brain}" \
+    flirt -in "${dwi_meanbzero_brain}" -ref "${T1_brain}" \
           -cost normmi -dof 6 -omat "${transform_DWI_T1_FSL}"
-    transformconvert "${transform_DWI_T1_FSL}" "${dwi_meanbzero_masked_nii}" \
+    transformconvert "${transform_DWI_T1_FSL}" "${dwi_meanbzero_brain}" \
                      "${T1_brain}" flirt_import "${transform_DWI_T1}"
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
