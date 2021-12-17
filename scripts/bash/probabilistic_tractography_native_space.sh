@@ -120,6 +120,13 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
                 "${csf_fod_norm}" -mask "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
 fi
 
+# create a combined fod image for visualization
+vf_mif="${dmri_dir}/vf.mif"
+if [ ! -f ${vf_mif} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Generating a visualization file from normalized FODs"
+    mrconvert ${threading} -info -coord 3 0 "${wm_fod_norm}" - | mrcat "${csf_fod_norm}" "${gm_fod_norm}" - "${vf_mif}"
+fi
+
 
 # Create a mask of white matter gray matter interface using 5 tissue type segmentation (~70sec)
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
@@ -193,11 +200,34 @@ if [ ! -f ${tracks} ]; then
            -info -samples 3
 fi
 
+# extract other weightings (than raw streamline count)
+
 # computing SIFT2 weightings (~150sec for 100K, however may not scale linearly needs to be tested on more streamlines)
 sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
     tcksift2 ${threading} -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
+fi
+
+# diffusion tensor estimation (~5sec)
+dti_mif="${dmri_dir}/dti.mif"
+if [ ! -f ${dti_mif} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Diffusion tensor estimation"
+    dwi2tensor ${threading} -info "${dwi_mif}" "${dti_mif}" -mask "${dwi_meanbzero_brain_mask}"
+fi
+
+# diffusion tensor estimation (~5sec)
+fa_mif="${dmri_dir}/fa.mif"
+if [ ! -f ${fa_mif} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing fractional anisotropy (FA)"
+    tensor2metric ${threading} -info "${dti_mif}" -fa "${fa_mif}"
+fi
+
+# resample endpoints
+endpoints="${dmri_dir}/tracks_${streamlines}_endpoints.tck"
+if [ ! -f ${sift_weights} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Resampling streamline endpoints"
+    tckresample ${threading} -info -endpoints "${tracks}" "${endpoints}"
 fi
 
 # Tractography considerations:
@@ -238,7 +268,6 @@ fi
 #   and streamline-wise statistic will not make sense; but it's nevertheless worth considering the
 #   whole space of possibilities.
 ###############################################################################################
-
 
 echo -e "${GREEN}[INFO]${NC} `date`: Finished tractography for: ${ukb_subject_id}_${ukb_instance}"
 
