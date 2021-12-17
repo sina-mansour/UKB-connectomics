@@ -78,15 +78,6 @@ fi
 
 
 # Estimate the response function using the dhollander method (~4min)
-##########################################################################################
-# RS: As discussed, would be preferable to have used a group average response function,
-# especially if the ODF images are to be provided to the community as that could result
-# in wider applicability of those data for other projects (e.g. construction of multi-tissue
-# odf template).
-# This would not necessarily have to be an average across the *whole* UKB: you could obtain
-# DWI data for some manageable subset and compute the average response functions from those,
-# and those would be adequately representative to be used across all subjects.
-##########################################################################################
 wm_txt="${dmri_dir}/wm.txt"
 gm_txt="${dmri_dir}/gm.txt"
 csf_txt="${dmri_dir}/csf.txt"
@@ -131,31 +122,6 @@ fi
 
 
 # Create a mask of white matter gray matter interface using 5 tissue type segmentation (~70sec)
-# Q:Shall we use FSL FAST's output or Freesurfer or the new hsvs? --> freesurfer is faster
-#####################################################################################
-# RS: 5ttgen freesurfer is probably the best choice given limited computational resources.
-# I have recently come across a new FreeSurfer module:
-# https://surfer.nmr.mgh.harvard.edu/fswiki/ScLimbic
-# I have worked on integrating this into 5ttgen freesurfer. Tracking behaviour around this
-# area is notoriously bad, so it would be good to clean up. Pretty sure the anterior
-# commissure gets cut off completely without it (at least it does in HSVS). 
-# https://github.com/MRtrix3/mrtrix3/issues/2390
-# 
-# Using -nocrop will result in a larger image, which will result in slightly inferior
-# caching performance during tractography. If planning to distribute these data to the
-# community, it may be preferable to use just so that the image dimensions are identical
-# to the originating FreeSurfer images, but if you're hunting performance it would be
-# better to omit this command-line option.
-#
-# I do not trust the FreeSurfer sub-cortical grey matter segmentations at all. Better would
-# be to strip them out, then take the pre-existing FSL FIRST outputs and insert those
-# segmentations into the 5TT image. The labelsgmfix script already does this for parcellation
-# images; a similar approach could be used here for 5TT images. It would require a little
-# development work on my part, but not a huge amount. I showed in the supplementary material
-# of this article that connectome reproducibility can be improved simply by using the FIRST
-# segmentations rather than the FreeSurfer ones:
-# https://www.sciencedirect.com/science/article/pii/S1053811914008155#s0130
-#####################################################################################
 freesurfer_5tt_T1="${dmri_dir}/5tt.T1.freesurfer.mif"
 freesurfer_5tt="${dmri_dir}/5tt.freesurfer.mif"
 T1_brain="${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/T1/T1_brain.nii.gz"
@@ -169,9 +135,6 @@ transform_DWI_T1="${dmri_dir}/diff2struct_mrtrix.txt"
 if [ ! -f ${gmwm_seed} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running 5ttgen to get gray matter white matter interface mask"
     # First create the 5tt image
-    # 5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
-    #                   "${freesurfer_5tt_T1}" -nocrop -sgm_amyg_hipp ${threading} -info
-    # Testing the new freesurfer -first option
     ${mrtrix_dir}/5ttgen freesurfer "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/FreeSurfer/mri/aparc+aseg.mgz" \
                          -first ${T1_first} "${freesurfer_5tt_T1}" \
                          -nocrop -sgm_amyg_hipp ${threading} -info
@@ -198,7 +161,6 @@ if [ ! -f ${gmwm_seed} ]; then
     mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
     mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
     mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-
 fi
 
 
