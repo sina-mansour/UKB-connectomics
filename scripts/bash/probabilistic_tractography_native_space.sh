@@ -238,6 +238,9 @@ streamline_mean_md="${dmri_dir}/streamline_metric_md_mean.txt" # aka adc
 streamline_mean_cl="${dmri_dir}/streamline_metric_cl_mean.txt"
 streamline_mean_cp="${dmri_dir}/streamline_metric_cp_mean.txt"
 streamline_mean_cs="${dmri_dir}/streamline_metric_cs_mean.txt"
+streamline_mean_icvf="${dmri_dir}/streamline_metric_noddi_icvf_mean.txt"
+streamline_mean_isovf="${dmri_dir}/streamline_metric_noddi_isovf_mean.txt"
+streamline_mean_od="${dmri_dir}/streamline_metric_noddi_od_mean.txt"
 if [ ! -f ${streamline_mean_fa} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Sampling metrics along tracks"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${fa_mif}" "${streamline_mean_fa}"
@@ -247,6 +250,9 @@ if [ ! -f ${streamline_mean_fa} ]; then
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${cl_mif}" "${streamline_mean_cl}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${cp_mif}" "${streamline_mean_cp}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${cs_mif}" "${streamline_mean_cs}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
 fi
 
 # resample endpoints
