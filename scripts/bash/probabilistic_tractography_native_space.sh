@@ -197,7 +197,7 @@ if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
     tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
            -maxlength 250 -cutoff 0.1 ${threading} "${wm_fod_norm}" "${tracks}" -power 0.5 \
-           -info -samples 3
+           -info -samples 3 -select 0
 fi
 
 # extract other weightings (than raw streamline count)
