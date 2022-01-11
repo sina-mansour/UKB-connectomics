@@ -1,9 +1,10 @@
 #!/bin/bash
 
-# This script is be used to estimate probabilistic tractography streamlines.
-# It mainly uses codes from MRtrix 3.0 (https://www.mrtrix.org/)
+# This script is used to estimate probabilistic tractography streamlines.
+# It mainly uses codes from MRtrix 3.0
 # 
 # Helpful resources:
+# https://www.mrtrix.org/
 # 
 
 
@@ -25,6 +26,7 @@ main_dir=$1
 ukb_subjects_dir=$2
 ukb_subject_id=$3
 ukb_instance=$4
+streamlines=$5
 
 mrtrix_dir="${main_dir}/lib/mrtrix3/bin"
 script_dir="${main_dir}/scripts"
@@ -190,7 +192,7 @@ fi
 # - Still discussion to be had RE: requesting specific number of seeds vs. streamlines vs. selected streamlines
 #   https://github.com/MRtrix3/mrtrix3/issues/2391
 #############################################################################################
-streamlines="100K" # testing with a smaller value: for 100K seeds, it took ~70sec, see below:
+# testing with a smaller value: for 100K seeds, it took ~70sec, see below:
 # tckgen: [100%]   100000 seeds,    44305 streamlines,    17317 selected
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
 if [ ! -f ${tracks} ]; then
