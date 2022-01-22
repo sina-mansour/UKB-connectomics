@@ -66,11 +66,25 @@ fi
 
 # Compute connectivity for different measures extracted (~1sec)
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
+sift_weights="${dmri_dir}/sift_weights.txt"
+streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
+streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
+streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
+streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
+streamline_mean_icvf="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.txt"
+streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
+streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 out_assignments="${dmri_dir}/out_assignments_${streamlines}.tck"
 streamline_count="${dmri_dir}/connectome_streamline_count_${streamlines}.csv"
-sift_weights="${dmri_dir}/sift_weights.txt"
 sift2_fbc="${dmri_dir}/connectome_sift2_fbc_${streamlines}.csv"
 mean_length="${dmri_dir}/connectome_mean_length_${streamlines}.csv"
+mean_fa="${dmri_dir}/connectome_mean_FA_${streamlines}.csv"
+mean_md="${dmri_dir}/connectome_mean_MD_${streamlines}.csv"
+mean_mo="${dmri_dir}/connectome_mean_MO_${streamlines}.csv"
+mean_s0="${dmri_dir}/connectome_mean_S0_${streamlines}.csv"
+mean_icvf="${dmri_dir}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
+mean_isovf="${dmri_dir}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
+mean_od="${dmri_dir}/connectome_mean_NODDI_OD_${streamlines}.csv"
 if [ ! -f ${out_assignments} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from streamline count"
     tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -out_assignments \
@@ -83,5 +97,33 @@ if [ ! -f ${out_assignments} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean fiber length"
     tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_length \
                    -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_length}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from fractional anisotropy (FA)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_fa}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_fa}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean diffusivity (MD)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_md}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_md}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mode of the anisotropy (MO)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_mo}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_mo}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from raw T2 signal (S0)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_s0}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_s0}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI intra-cellular volume fraction (NODDI_ICVF)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_icvf}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_icvf}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI isotropic volume fraction (NODDI_ISOVF)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_isovf}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_isovf}"
+                   
+    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI orientation dispersion index (NODDI_OD)"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_mean_od}" -stat_edge mean "${tracks}" "${atlas_dwi_converted}" "${mean_od}"
 fi
 
