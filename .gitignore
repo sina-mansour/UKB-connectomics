@@ -15,3 +15,6 @@ __pycache__/
 
 # ignore installed software
 lib/
+
+# ignore logfiles
+logs/
