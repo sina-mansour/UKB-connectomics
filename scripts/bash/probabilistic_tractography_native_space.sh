@@ -211,49 +211,41 @@ if [ ! -f ${sift_weights} ]; then
     tcksift2 ${threading} -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
 fi
 
-# diffusion tensor estimation (~5sec)
-dti_mif="${dmri_dir}/dti.mif"
-if [ ! -f ${dti_mif} ]; then
-    echo -e "${GREEN}[INFO]${NC} `date`: Diffusion tensor estimation"
-    dwi2tensor ${threading} -info "${dwi_mif}" "${dti_mif}" -mask "${dwi_meanbzero_brain_mask}"
-fi
+# diffusion tensor metrics computed from provided images
+# dti_mif="${dmri_dir}/dti.mif"
+# if [ ! -f ${dti_mif} ]; then
+#     echo -e "${GREEN}[INFO]${NC} `date`: Diffusion tensor estimation"
+#     dwi2tensor ${threading} -info "${dwi_mif}" "${dti_mif}" -mask "${dwi_meanbzero_brain_mask}"
+# fi
 
-# diffusion tensor metric computation (~1sec)
-fa_mif="${dmri_dir}/dti_metric_fa.mif"
-ad_mif="${dmri_dir}/dti_metric_ad.mif"
-rd_mif="${dmri_dir}/dti_metric_rd.mif"
-md_mif="${dmri_dir}/dti_metric_md.mif" # aka adc
-cl_mif="${dmri_dir}/dti_metric_cl.mif"
-cp_mif="${dmri_dir}/dti_metric_cp.mif"
-cs_mif="${dmri_dir}/dti_metric_cs.mif"
-if [ ! -f ${fa_mif} ]; then
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing tensor metrics (FA, MD, RD, AD, CL, CP, CS)"
-    tensor2metric ${threading} -info "${dti_mif}" -fa "${fa_mif}" -ad "${ad_mif}" -rd "${rd_mif}" \
-                  -adc "${md_mif}" -cl "${cl_mif}" -cp "${cp_mif}" -cs "${cs_mif}"
-fi
+# # diffusion tensor metric computation (~1sec)
+# fa_mif="${dmri_dir}/dti_metric_fa.mif"
+# ad_mif="${dmri_dir}/dti_metric_ad.mif"
+# rd_mif="${dmri_dir}/dti_metric_rd.mif"
+# md_mif="${dmri_dir}/dti_metric_md.mif" # aka adc
+# cl_mif="${dmri_dir}/dti_metric_cl.mif"
+# cp_mif="${dmri_dir}/dti_metric_cp.mif"
+# cs_mif="${dmri_dir}/dti_metric_cs.mif"
+# if [ ! -f ${fa_mif} ]; then
+#     echo -e "${GREEN}[INFO]${NC} `date`: Computing tensor metrics (FA, MD, RD, AD, CL, CP, CS)"
+#     tensor2metric ${threading} -info "${dti_mif}" -fa "${fa_mif}" -ad "${ad_mif}" -rd "${rd_mif}" \
+#                   -adc "${md_mif}" -cl "${cl_mif}" -cp "${cp_mif}" -cs "${cs_mif}"
+# fi
 
 # sample metrics along streamlines (~1sec)
-streamline_mean_fa="${dmri_dir}/streamline_metric_fa_mean.txt"
-streamline_mean_ad="${dmri_dir}/streamline_metric_ad_mean.txt"
-streamline_mean_rd="${dmri_dir}/streamline_metric_rd_mean.txt"
-streamline_mean_md="${dmri_dir}/streamline_metric_md_mean.txt" # aka adc
-streamline_mean_cl="${dmri_dir}/streamline_metric_cl_mean.txt"
-streamline_mean_cp="${dmri_dir}/streamline_metric_cp_mean.txt"
-streamline_mean_cs="${dmri_dir}/streamline_metric_cs_mean.txt"
-streamline_mean_mo="${dmri_dir}/streamline_metric_mo_mean.txt"
-streamline_mean_icvf="${dmri_dir}/streamline_metric_noddi_icvf_mean.txt"
-streamline_mean_isovf="${dmri_dir}/streamline_metric_noddi_isovf_mean.txt"
-streamline_mean_od="${dmri_dir}/streamline_metric_noddi_od_mean.txt"
+streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
+streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
+streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
+streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
+streamline_mean_icvf="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.txt"
+streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
+streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 if [ ! -f ${streamline_mean_fa} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Sampling metrics along tracks"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${fa_mif}" "${streamline_mean_fa}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${ad_mif}" "${streamline_mean_ad}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${rd_mif}" "${streamline_mean_rd}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${md_mif}" "${streamline_mean_md}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${cl_mif}" "${streamline_mean_cl}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${cp_mif}" "${streamline_mean_cp}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${cs_mif}" "${streamline_mean_cs}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
+    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
