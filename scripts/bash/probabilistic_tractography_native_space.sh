@@ -195,11 +195,12 @@ fi
 # testing with a smaller value: for 100K seeds, it took ~70sec, see below:
 # tckgen: [100%]   100000 seeds,    44305 streamlines,    17317 selected
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
+trackstats="${dmri_dir}/tracks_${streamlines}_stats.json"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
-    tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
-           -maxlength 250 -cutoff 0.1 ${threading} "${wm_fod_norm}" "${tracks}" -power 0.5 \
-           -info -samples 3 -select 0
+    ${mrtrix_dir}/tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
+                         -maxlength 250 -cutoff 0.1 ${threading} "${wm_fod_norm}" "${tracks}" -power 0.5 \
+                         -info -samples 3 -select 0 -output_stats "${trackstats}"
 fi
 
 # extract other weightings (than raw streamline count)
