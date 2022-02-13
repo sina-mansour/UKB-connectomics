@@ -1,0 +1,200 @@
+17Networks_LH_VisCent_ExStr_1
+1 208 177 70 255
+17Networks_LH_VisCent_ExStr_2
+2 111 180 218 255
+17Networks_LH_VisCent_Striate_1
+3 190 69 111 255
+17Networks_LH_VisCent_ExStr_3
+4 128 135 192 255
+17Networks_LH_VisPeri_ExStrInf_1
+5 166 134 184 255
+17Networks_LH_VisPeri_StriCal_1
+6 179 146 0 255
+17Networks_LH_VisPeri_ExStrSup_1
+7 227 65 161 255
+17Networks_LH_SomMotA_1
+8 208 40 87 255
+17Networks_LH_SomMotA_2
+9 202 165 112 255
+17Networks_LH_SomMotB_Aud_1
+10 204 160 29 255
+17Networks_LH_SomMotB_S2_1
+11 90 209 15 255
+17Networks_LH_SomMotB_S2_2
+12 161 10 222 255
+17Networks_LH_SomMotB_Cent_1
+13 73 41 115 255
+17Networks_LH_DorsAttnA_TempOcc_1
+14 64 166 214 255
+17Networks_LH_DorsAttnA_ParOcc_1
+15 82 190 124 255
+17Networks_LH_DorsAttnA_SPL_1
+16 192 125 139 255
+17Networks_LH_DorsAttnB_PostC_1
+17 65 39 226 255
+17Networks_LH_DorsAttnB_PostC_2
+18 135 84 144 255
+17Networks_LH_DorsAttnB_PostC_3
+19 125 155 76 255
+17Networks_LH_DorsAttnB_FEF_1
+20 233 92 230 255
+17Networks_LH_SalVentAttnA_ParOper_1
+21 3 53 144 255
+17Networks_LH_SalVentAttnA_Ins_1
+22 233 52 98 255
+17Networks_LH_SalVentAttnA_Ins_2
+23 95 91 252 255
+17Networks_LH_SalVentAttnA_ParMed_1
+24 177 193 83 255
+17Networks_LH_SalVentAttnA_FrMed_1
+25 48 126 189 255
+17Networks_LH_SalVentAttnB_PFCl_1
+26 34 206 124 255
+17Networks_LH_SalVentAttnB_PFCmp_1
+27 24 72 193 255
+17Networks_LH_LimbicB_OFC_1
+28 10 19 198 255
+17Networks_LH_LimbicA_TempPole_1
+29 134 147 102 255
+17Networks_LH_LimbicA_TempPole_2
+30 128 167 156 255
+17Networks_LH_ContA_IPS_1
+31 76 127 209 255
+17Networks_LH_ContA_PFCl_1
+32 248 122 87 255
+17Networks_LH_ContA_PFCl_2
+33 246 2 248 255
+17Networks_LH_ContB_PFClv_1
+34 218 166 8 255
+17Networks_LH_ContC_pCun_1
+35 19 14 238 255
+17Networks_LH_ContC_pCun_2
+36 60 58 31 255
+17Networks_LH_ContC_Cingp_1
+37 193 127 170 255
+17Networks_LH_DefaultA_PFCd_1
+38 204 239 41 255
+17Networks_LH_DefaultA_pCunPCC_1
+39 88 204 19 255
+17Networks_LH_DefaultA_PFCm_1
+40 94 84 160 255
+17Networks_LH_DefaultB_Temp_1
+41 103 130 204 255
+17Networks_LH_DefaultB_Temp_2
+42 39 212 125 255
+17Networks_LH_DefaultB_IPL_1
+43 12 29 27 255
+17Networks_LH_DefaultB_PFCd_1
+44 136 218 140 255
+17Networks_LH_DefaultB_PFCl_1
+45 104 28 234 255
+17Networks_LH_DefaultB_PFCv_1
+46 51 26 33 255
+17Networks_LH_DefaultB_PFCv_2
+47 138 144 239 255
+17Networks_LH_DefaultC_Rsp_1
+48 42 238 146 255
+17Networks_LH_DefaultC_PHC_1
+49 192 112 83 255
+17Networks_LH_TempPar_1
+50 79 157 161 255
+17Networks_RH_VisCent_ExStr_1
+51 44 6 36 255
+17Networks_RH_VisCent_ExStr_2
+52 233 132 185 255
+17Networks_RH_VisCent_ExStr_3
+53 220 22 173 255
+17Networks_RH_VisPeri_StriCal_1
+54 196 181 82 255
+17Networks_RH_VisPeri_ExStrInf_1
+55 185 245 238 255
+17Networks_RH_VisPeri_ExStrSup_1
+56 109 179 17 255
+17Networks_RH_SomMotA_1
+57 38 205 75 255
+17Networks_RH_SomMotA_2
+58 138 78 163 255
+17Networks_RH_SomMotA_3
+59 203 64 124 255
+17Networks_RH_SomMotA_4
+60 77 29 0 255
+17Networks_RH_SomMotB_Aud_1
+61 159 150 48 255
+17Networks_RH_SomMotB_S2_1
+62 243 215 204 255
+17Networks_RH_SomMotB_S2_2
+63 198 72 55 255
+17Networks_RH_SomMotB_Cent_1
+64 248 176 135 255
+17Networks_RH_DorsAttnA_TempOcc_1
+65 179 91 182 255
+17Networks_RH_DorsAttnA_ParOcc_1
+66 232 11 228 255
+17Networks_RH_DorsAttnA_SPL_1
+67 247 154 144 255
+17Networks_RH_DorsAttnB_PostC_1
+68 209 206 235 255
+17Networks_RH_DorsAttnB_PostC_2
+69 172 147 133 255
+17Networks_RH_DorsAttnB_FEF_1
+70 232 209 2 255
+17Networks_RH_SalVentAttnA_ParOper_1
+71 207 222 204 255
+17Networks_RH_SalVentAttnA_Ins_1
+72 177 133 247 255
+17Networks_RH_SalVentAttnA_ParMed_1
+73 128 124 209 255
+17Networks_RH_SalVentAttnA_FrMed_1
+74 192 181 51 255
+17Networks_RH_SalVentAttnB_IPL_1
+75 95 234 212 255
+17Networks_RH_SalVentAttnB_PFCl_1
+76 184 25 147 255
+17Networks_RH_SalVentAttnB_PFCmp_1
+77 93 34 218 255
+17Networks_RH_LimbicB_OFC_1
+78 99 213 178 255
+17Networks_RH_LimbicA_TempPole_1
+79 192 0 103 255
+17Networks_RH_ContA_IPS_1
+80 204 8 236 255
+17Networks_RH_ContA_PFCl_1
+81 132 145 191 255
+17Networks_RH_ContA_PFCl_2
+82 249 134 82 255
+17Networks_RH_ContB_Temp_1
+83 14 38 200 255
+17Networks_RH_ContB_IPL_1
+84 147 34 115 255
+17Networks_RH_ContB_PFCld_1
+85 60 248 26 255
+17Networks_RH_ContB_PFClv_1
+86 7 25 44 255
+17Networks_RH_ContC_Cingp_1
+87 77 91 181 255
+17Networks_RH_ContC_pCun_1
+88 36 96 45 255
+17Networks_RH_DefaultA_IPL_1
+89 248 162 113 255
+17Networks_RH_DefaultA_PFCd_1
+90 78 59 211 255
+17Networks_RH_DefaultA_pCunPCC_1
+91 130 117 23 255
+17Networks_RH_DefaultA_PFCm_1
+92 187 118 17 255
+17Networks_RH_DefaultB_PFCd_1
+93 143 171 137 255
+17Networks_RH_DefaultB_PFCv_1
+94 203 178 212 255
+17Networks_RH_DefaultB_PFCv_2
+95 144 50 86 255
+17Networks_RH_DefaultC_Rsp_1
+96 91 78 22 255
+17Networks_RH_DefaultC_PHC_1
+97 63 66 28 255
+17Networks_RH_TempPar_1
+98 29 153 243 255
+17Networks_RH_TempPar_2
+99 231 181 190 255
+17Networks_RH_TempPar_3
+100 219 91 173 255

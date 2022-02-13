@@ -26,7 +26,7 @@ if __name__ == '__main__':
     # load the atlas label names from txt file
     subcortical_labels = pd.DataFrame(
         ['???'] + list(np.genfromtxt(
-            '{}/atlases/{}_label.txt'.format(template_dir, atlas_name),
+            '{}/atlases/labels/{}_label.txt'.format(template_dir, atlas_name),
             dtype='str'
         )),
         columns=['label_name'],
