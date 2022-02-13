@@ -1,0 +1,136 @@
+left_bankssts
+1 210 32 91 255
+left_caudalanteriorcingulate
+2 9 225 35 255
+left_caudalmiddlefrontal
+3 47 190 84 255
+left_cuneus
+4 84 161 66 255
+left_entorhinal
+5 217 184 149 255
+left_fusiform
+6 146 229 85 255
+left_inferiorparietal
+7 59 146 106 255
+left_inferiortemporal
+8 190 180 126 255
+left_isthmuscingulate
+9 184 168 108 255
+left_lateraloccipital
+10 32 45 95 255
+left_lateralorbitofrontal
+11 21 118 150 255
+left_lingual
+12 49 110 102 255
+left_medialorbitofrontal
+13 86 9 53 255
+left_middletemporal
+14 149 38 115 255
+left_parahippocampal
+15 80 229 186 255
+left_paracentral
+16 9 26 21 255
+left_parsopercularis
+17 124 223 172 255
+left_parsorbitalis
+18 46 99 242 255
+left_parstriangularis
+19 102 126 136 255
+left_pericalcarine
+20 58 106 255 255
+left_postcentral
+21 121 209 171 255
+left_posteriorcingulate
+22 184 26 244 255
+left_precentral
+23 43 133 127 255
+left_precuneus
+24 168 249 227 255
+left_rostralanteriorcingulate
+25 115 122 89 255
+left_rostralmiddlefrontal
+26 19 213 156 255
+left_superiorfrontal
+27 126 245 159 255
+left_superiorparietal
+28 145 35 56 255
+left_superiortemporal
+29 167 17 226 255
+left_supramarginal
+30 107 250 10 255
+left_frontalpole
+31 187 14 214 255
+left_temporalpole
+32 13 19 224 255
+left_transversetemporal
+33 239 153 92 255
+left_insula
+34 202 234 224 255
+right_bankssts
+35 14 241 138 255
+right_caudalanteriorcingulate
+36 115 122 247 255
+right_caudalmiddlefrontal
+37 232 98 235 255
+right_cuneus
+38 244 55 77 255
+right_entorhinal
+39 132 4 241 255
+right_fusiform
+40 162 184 74 255
+right_inferiorparietal
+41 155 148 43 255
+right_inferiortemporal
+42 199 174 221 255
+right_isthmuscingulate
+43 18 117 159 255
+right_lateraloccipital
+44 241 18 142 255
+right_lateralorbitofrontal
+45 143 151 19 255
+right_lingual
+46 231 217 237 255
+right_medialorbitofrontal
+47 117 9 142 255
+right_middletemporal
+48 201 215 253 255
+right_parahippocampal
+49 182 175 164 255
+right_paracentral
+50 27 164 230 255
+right_parsopercularis
+51 213 163 142 255
+right_parsorbitalis
+52 208 185 69 255
+right_parstriangularis
+53 75 110 20 255
+right_pericalcarine
+54 67 104 228 255
+right_postcentral
+55 219 187 220 255
+right_posteriorcingulate
+56 195 195 51 255
+right_precentral
+57 83 16 31 255
+right_precuneus
+58 129 19 167 255
+right_rostralanteriorcingulate
+59 252 191 240 255
+right_rostralmiddlefrontal
+60 43 80 69 255
+right_superiorfrontal
+61 9 8 213 255
+right_superiorparietal
+62 238 103 21 255
+right_superiortemporal
+63 191 2 253 255
+right_supramarginal
+64 189 75 55 255
+right_frontalpole
+65 194 53 0 255
+right_temporalpole
+66 17 5 172 255
+right_transversetemporal
+67 119 89 144 255
+right_insula
+68 175 14 16 255
