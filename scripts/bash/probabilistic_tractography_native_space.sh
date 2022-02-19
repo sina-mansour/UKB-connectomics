@@ -234,6 +234,7 @@ fi
 # fi
 
 # sample metrics along streamlines (~1sec)
+streamline_length="${dmri_dir}/streamline_metric_length.txt"
 streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
 streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
 streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
@@ -243,6 +244,7 @@ streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
 streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 if [ ! -f ${streamline_mean_fa} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Sampling metrics along tracks"
+    tckstats ${threading} -info -dump "${streamline_length}" "${tracks}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
