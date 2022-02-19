@@ -75,23 +75,24 @@ fi
 # Compute connectivity for different measures extracted (~1sec)
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
 sift_weights="${dmri_dir}/sift_weights.txt"
+streamline_length="${dmri_dir}/streamline_metric_length.txt"
 streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
-streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
-streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
-streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
-streamline_mean_icvf="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.txt"
-streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
-streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
+# streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
+# streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
+# streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
+# streamline_mean_icvf="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.txt"
+# streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
+# streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 streamline_count="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.csv"
 sift2_fbc="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.csv"
 mean_length="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.csv"
 mean_fa="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.csv"
-mean_md="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
-mean_mo="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
-mean_s0="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
-mean_icvf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
-mean_isovf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
-mean_od="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
+# mean_md="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
+# mean_mo="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
+# mean_s0="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
+# mean_icvf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
+# mean_isovf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
+# mean_od="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
 if [ ! -f ${streamline_count} ]; then
     mkdir -p "${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/"
 
@@ -104,36 +105,36 @@ if [ ! -f ${streamline_count} ]; then
                    "${sift_weights}" "${tracks}" "${combined_atlas_dwi}" "${sift2_fbc}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean fiber length"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_length \
-                   -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_length}"
+    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${streamline_length}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_length}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from fractional anisotropy (FA)"
     tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
                    "${streamline_mean_fa}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_fa}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean diffusivity (MD)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_md}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_md}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean diffusivity (MD)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_md}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_md}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mode of the anisotropy (MO)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_mo}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_mo}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mode of the anisotropy (MO)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_mo}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_mo}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from raw T2 signal (S0)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_s0}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_s0}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from raw T2 signal (S0)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_s0}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_s0}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI intra-cellular volume fraction (NODDI_ICVF)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_icvf}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_icvf}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI intra-cellular volume fraction (NODDI_ICVF)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_icvf}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_icvf}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI isotropic volume fraction (NODDI_ISOVF)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_isovf}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_isovf}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI isotropic volume fraction (NODDI_ISOVF)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_isovf}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_isovf}"
                    
-    echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI orientation dispersion index (NODDI_OD)"
-    tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
-                   "${streamline_mean_od}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_od}"
+    # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI orientation dispersion index (NODDI_OD)"
+    # tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+    #                "${streamline_mean_od}" -stat_edge mean "${tracks}" "${combined_atlas_dwi}" "${mean_od}"
 fi
 
 echo -e "${GREEN}[INFO]${NC} `date`: Finished structural connectivity mapping for: ${ukb_subject_id}_${ukb_instance} on ${atlas_name}"
