@@ -257,7 +257,37 @@ echo -e "${GREEN}[INFO]`date`:${NC} All fMRI time-series generated."
 # Map structural connectivity
 # --------------------------------------------------------------------------------
 
-# To be written...
+# Step 1: run probabilistic tractography pipeline
+
+echo -e "${GREEN}[INFO]`date`:${NC} Running probabilistic tractography pipeline."
+
+# seed 10M streamlines
+streamlines="10M"
+
+# use the scripts written to perform tractography pipeline
+"${script_dir}/bash/probabilistic_tractography_native_space.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${streamlines}"
+
+echo -e "${GREEN}[INFO]`date`:${NC} Mapping structural connectomes from tractography outputs."
+
+# Step 2: map connectivity on combined cortical + subcortical atlases
+for cortical_atlas in ${atlases[@]}; do
+	IFS=',' read -a cortical_atlas_info <<< "${cortical_atlas}"
+	cortical_atlas_name=${cortical_atlas_info[0]}
+	cortical_atlas_file=${cortical_atlas_info[1]}
+
+	# map all surface atlases to native volume
+	for subcortical_atlas in ${subcortical_atlases[@]}; do
+		IFS=',' read -a subcortical_atlas_info <<< "${subcortical_atlas}"
+		subcortical_atlas_name=${subcortical_atlas_info[0]}
+		subcortical_atlas_file=${subcortical_atlas_info[1]}
+
+		echo -e "${GREEN}[INFO]`date`:${NC} Mapping structural connectomes on (cortical: ${cortical_atlas_name}, subcortical: ${subcortical_atlas_name}) atlases."
+
+		# use the scripts written to perform connectivity mapping
+		"${script_dir}/bash/map_structural_connectivity.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${streamlines}" "${cortical_atlas_name}" "${subcortical_atlas_name}"
+	done
+
+done
 
 
 # --------------------------------------------------------------------------------
