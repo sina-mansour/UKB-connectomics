@@ -205,11 +205,11 @@ fi
 
 # extract other weightings (than raw streamline count)
 
-# computing SIFT2 weightings (~150sec for 100K, however may not scale linearly needs to be tested on more streamlines)
+# computing SIFT2 weightings (~4min for 10M seeds)
 sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
-    tcksift2 ${threading} -info "${tracks}" "${wm_fod_norm}" "${sift_weights}"
+    tcksift2 ${threading} -info "${tracks}" -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # diffusion tensor metrics computed from provided images
@@ -233,7 +233,7 @@ fi
 #                   -adc "${md_mif}" -cl "${cl_mif}" -cp "${cp_mif}" -cs "${cs_mif}"
 # fi
 
-# sample metrics along streamlines (~1sec)
+# sample metrics along streamlines (~70sec)
 streamline_length="${dmri_dir}/streamline_metric_length.txt"
 streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
 streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
@@ -254,11 +254,45 @@ if [ ! -f ${streamline_mean_fa} ]; then
     tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
 fi
 
+
 # resample endpoints
 endpoints="${dmri_dir}/tracks_${streamlines}_endpoints.tck"
-if [ ! -f ${sift_weights} ]; then
+if [ ! -f ${endpoints} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Resampling streamline endpoints"
     tckresample ${threading} -info -endpoints "${tracks}" "${endpoints}"
+fi
+
+# Convert to float16 NPY binaries (~15sec)
+streamline_length_npy="${dmri_dir}/streamline_metric_length.npy"
+streamline_mean_fa_npy="${dmri_dir}/streamline_metric_FA_mean.npy"
+streamline_mean_md_npy="${dmri_dir}/streamline_metric_1000xMD_mean.npy"
+streamline_mean_mo_npy="${dmri_dir}/streamline_metric_MO_mean.npy"
+streamline_mean_s0_npy="${dmri_dir}/streamline_metric_0.001xS0_mean.npy"
+streamline_mean_icvf_npy="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.npy"
+streamline_mean_isovf_npy="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.npy"
+streamline_mean_od_npy="${dmri_dir}/streamline_metric_NODDI_OD_mean.npy"
+sift_weights_npy="${dmri_dir}/sift_weights.npy"
+endpoints_npy="${dmri_dir}/tracks_${streamlines}_endpoints.npy"
+if [ ! -f ${streamline_mean_fa_npy} ]; then
+    echo -e "${GREEN}[INFO]${NC} `date`: Converting to .npy binaries (float16)"
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_length}" "${streamline_length_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_fa}" "${streamline_mean_fa_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_md}" "${streamline_mean_md_npy}" 1000
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_mo}" "${streamline_mean_mo_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_s0}" "${streamline_mean_s0_npy}" 0.001
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_icvf}" "${streamline_mean_icvf_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_isovf}" "${streamline_mean_isovf_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_mean_od}" "${streamline_mean_od_npy}" 1
+    python3 "${script_dir}/python/save_metric_as_npy.py" "${sift_weights}" "${sift_weights_npy}" 1
+    python3 "${script_dir}/python/save_endpoints_as_npy.py" "${endpoints}" "${endpoints_npy}"
+    # ${mrtrix_dir}/tckstats ${threading} -info -config NPYFloatMaxSavePrecision 16 -dump "${streamline_length_npy}" "${tracks}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf_npy}"
+    # ${mrtrix_dir}/tcksample ${threading} -info -config NPYFloatMaxSavePrecision 16 -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od_npy}"
 fi
 
 # Tractography considerations:
