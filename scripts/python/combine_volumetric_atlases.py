@@ -75,8 +75,10 @@ if __name__ == '__main__':
     combined_atlas_data = atlas_1_data + atlas_2_data_masked_shifted
 
     # store combined atlas
+    combined_atlas_image = nib.Nifti1Image(combined_atlas_data, atlas_1_image.affine, atlas_1_image.header)
+    combined_atlas_image.header.set_slope_inter(1, 0)
     nib.save(
-        nib.Nifti1Image(combined_atlas_data, atlas_1_image.affine, atlas_1_image.header),
+        combined_atlas_image,
         ensure_dir(f'{ukb_subjects_dir}/{ukb_subject_id}_{ukb_instance}/dMRI/dMRI/atlases/combinations/native.dMRI_space.{atlas_1_name}+{atlas_2_name}.nii.gz')
     )
 
