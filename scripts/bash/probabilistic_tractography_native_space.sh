@@ -209,7 +209,8 @@ fi
 sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
-    ${mrtrix_dir}/tcksift2 ${threading} -info "${tracks}" -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
+    ${mrtrix_dir}/tcksift2 ${threading} -info "${tracks}" -act "${freesurfer_5tt}" \
+                           -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # diffusion tensor metrics computed from provided images
