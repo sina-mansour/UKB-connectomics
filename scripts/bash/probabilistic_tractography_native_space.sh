@@ -50,7 +50,7 @@ fi
 dwi_mif="${dmri_dir}/dwi.mif"
 if [ ! -f ${dwi_mif} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Converting dwi image to mif"
-    mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
+    ${mrtrix_dir}/mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
               -fslgrad "${dmri_dir}/data.eddy_rotated_bvecs" "${dmri_dir}/bvals" \
               -datatype float32 -strides 0,0,0,1 ${threading} -info
 fi
@@ -62,8 +62,8 @@ if [ ! -f ${dwi_meanbzero} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Extracting mean B0 image"
 
     # extract mean b0
-    dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
-    mrconvert "${dwi_meanbzero}" "${dwi_meanbzero_nii}" ${threading} -info
+    ${mrtrix_dir}/dwiextract ${threading} -info "${dwi_mif}" -bzero - | mrmath ${threading} -info - mean -axis 3 "${dwi_meanbzero}"
+    ${mrtrix_dir}/mrconvert "${dwi_meanbzero}" "${dwi_meanbzero_nii}" ${threading} -info
 fi
 
 # Then, create a dwi brain mask (the provided bedpostX mask is not that accurate) (~2sec)
@@ -85,7 +85,7 @@ gm_txt="${dmri_dir}/gm.txt"
 csf_txt="${dmri_dir}/csf.txt"
 if [ ! -f ${wm_txt} ] || [ ! -f ${gm_txt} ] || [ ! -f ${csf_txt} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Estimation of response function using dhollander"
-    dwi2response dhollander "${dwi_mif}" "${wm_txt}" "${gm_txt}" "${csf_txt}" \
+    ${mrtrix_dir}/dwi2response dhollander "${dwi_mif}" "${wm_txt}" "${gm_txt}" "${csf_txt}" \
                             -voxels "${dmri_dir}/voxels.mif" ${threading} -info
 fi
 
@@ -99,10 +99,10 @@ if [ ! -f ${wm_fod} ] || [ ! -f ${gm_fod} ] || [ ! -f ${csf_fod} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running Multi-Shell, Multi-Tissue Constrained Spherical Deconvolution"
     
     # First, creating a dilated brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/4)
-    maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" dilate "${dwi_mask_dilated}" ${threading} -info
+    ${mrtrix_dir}/maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" dilate "${dwi_mask_dilated}" ${threading} -info
 
     # Now, perfoming CSD with the dilated mask
-    dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" "${wm_txt}" "${wm_fod}" \
+    ${mrtrix_dir}/dwi2fod msmt_csd "${dwi_mif}" -mask "${dwi_mask_dilated}" "${wm_txt}" "${wm_fod}" \
             "${gm_txt}" "${gm_fod}" "${csf_txt}" "${csf_fod}" ${threading} -info
 fi
 
@@ -115,10 +115,10 @@ if [ ! -f ${wm_fod_norm} ] || [ ! -f ${gm_fod_norm} ] || [ ! -f ${csf_fod_norm} 
     echo -e "${GREEN}[INFO]${NC} `date`: Running multi-tissue log-domain intensity normalisation"
     
     # First, creating an eroded brain mask (https://github.com/sina-mansour/UKB-connectomics/issues/5)
-    maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" erode "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
+    ${mrtrix_dir}/maskfilter -npass 2 "${dwi_meanbzero_brain_mask}" erode "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
 
     # Now, perfoming mtnormalise
-    mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
+    ${mrtrix_dir}/mtnormalise "${wm_fod}" "${wm_fod_norm}" "${gm_fod}" "${gm_fod_norm}" "${csf_fod}" \
                 "${csf_fod_norm}" -mask "${dmri_dir}/dwi_meanbzero_brain_mask_eroded_2.nii.gz" ${threading} -info
 fi
 
@@ -126,7 +126,7 @@ fi
 vf_mif="${dmri_dir}/vf.mif"
 if [ ! -f ${vf_mif} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Generating a visualization file from normalized FODs"
-    mrconvert ${threading} -info -coord 3 0 "${wm_fod_norm}" - | mrcat "${csf_fod_norm}" "${gm_fod_norm}" - "${vf_mif}"
+    ${mrtrix_dir}/mrconvert ${threading} -info -coord 3 0 "${wm_fod_norm}" - | mrcat "${csf_fod_norm}" "${gm_fod_norm}" - "${vf_mif}"
 fi
 
 
@@ -149,7 +149,7 @@ if [ ! -f ${gmwm_seed} ]; then
                          -nocrop -sgm_amyg_hipp ${threading} -info
 
     # Next generate the boundary ribbon
-    5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}" ${threading} -info
+    ${mrtrix_dir}/5tt2gmwmi "${freesurfer_5tt_T1}" "${gmwm_seed_T1}" ${threading} -info
 
     # Coregistering the Diffusion and Anatomical Images
     # Check these links for further info:
@@ -163,13 +163,13 @@ if [ ! -f ${gmwm_seed} ]; then
     # Perform rigid body registration
     flirt -in "${dwi_meanbzero_brain}" -ref "${T1_brain}" \
           -cost normmi -dof 6 -omat "${transform_DWI_T1_FSL}"
-    transformconvert "${transform_DWI_T1_FSL}" "${dwi_meanbzero_brain}" \
+    ${mrtrix_dir}/transformconvert "${transform_DWI_T1_FSL}" "${dwi_meanbzero_brain}" \
                      "${T1_brain}" flirt_import "${transform_DWI_T1}"
 
     # Perform transformation of the boundary ribbon from T1 to DWI space
-    mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
-    mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    ${mrtrix_dir}/mrtransform "${freesurfer_5tt_T1}" "${freesurfer_5tt}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    ${mrtrix_dir}/mrtransform "${T1_brain}" "${T1_brain_dwi}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
+    ${mrtrix_dir}/mrtransform "${gmwm_seed_T1}" "${gmwm_seed}" -linear "${transform_DWI_T1}" -inverse ${threading} -info
 fi
 
 
@@ -209,7 +209,7 @@ fi
 sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
-    tcksift2 ${threading} -info "${tracks}" -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
+    ${mrtrix_dir}/tcksift2 ${threading} -info "${tracks}" -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # diffusion tensor metrics computed from provided images
@@ -244,14 +244,14 @@ streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
 streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 if [ ! -f ${streamline_mean_fa} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Sampling metrics along tracks"
-    tckstats ${threading} -info -dump "${streamline_length}" "${tracks}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
-    tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
+    ${mrtrix_dir}/tckstats ${threading} -info -dump "${streamline_length}" "${tracks}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
+    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
 fi
 
 
@@ -259,7 +259,7 @@ fi
 endpoints="${dmri_dir}/tracks_${streamlines}_endpoints.tck"
 if [ ! -f ${endpoints} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Resampling streamline endpoints"
-    tckresample ${threading} -info -endpoints "${tracks}" "${endpoints}"
+    ${mrtrix_dir}/tckresample ${threading} -info -endpoints "${tracks}" "${endpoints}"
 fi
 
 # Convert to float16 NPY binaries (~15sec)
