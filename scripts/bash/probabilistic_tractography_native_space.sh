@@ -210,7 +210,7 @@ sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
     ${mrtrix_dir}/tcksift2 ${threading} -info "${tracks}" -act "${freesurfer_5tt}" \
-                           -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
+                           -csv  -precise"${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # diffusion tensor metrics computed from provided images
@@ -246,13 +246,13 @@ streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
 if [ ! -f ${streamline_mean_fa} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Sampling metrics along tracks"
     ${mrtrix_dir}/tckstats ${threading} -info -dump "${streamline_length}" "${tracks}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
-    ${mrtrix_dir}/tcksample ${threading} -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_FA.nii.gz" "${streamline_mean_fa}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MD.nii.gz" "${streamline_mean_md}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_MO.nii.gz" "${streamline_mean_mo}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/dti_S0.nii.gz" "${streamline_mean_s0}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ICVF.nii.gz" "${streamline_mean_icvf}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_ISOVF.nii.gz" "${streamline_mean_isovf}"
+    ${mrtrix_dir}/tcksample ${threading} -precise -info -stat_tck mean "${tracks}" "${dmri_dir}/NODDI_OD.nii.gz" "${streamline_mean_od}"
 fi
 
 
