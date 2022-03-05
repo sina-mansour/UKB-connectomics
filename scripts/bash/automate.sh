@@ -16,6 +16,10 @@
 source /usr/local/module/spartan_new.sh
 module load foss/2019b
 module load web_proxy/latest connectomeworkbench/1.4.2 freesurfer/7.1.1-centos7_x86_64 fsl/6.0.3-python-3.7.4
+# module load mrtrix/3.0.1-python-2.7.16 eigen/3.3.7
+
+# ensure using the built mrtrix
+# export PATH="/data/gpfs/projects/punim1566/UKB-connectomics/lib/mrtrix3/bin:$PATH"
 
 source ukbvenv/bin/activate
 
