@@ -31,6 +31,9 @@ echo -e "${GREEN}[INFO]${NC} `date`: Configuring the ukb release"
 cd mrtrix3
 git checkout ukb
 ./configure
+# on spartan:
+# ./configure -static -nogui
+# see https://mrtrix.readthedocs.io/en/3.0_rc3/installation/linux_install.html#static-build
 
 # building binaries
 echo -e "${GREEN}[INFO]${NC} `date`: Building the binaries"
