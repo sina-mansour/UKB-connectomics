@@ -75,9 +75,9 @@ fi
 # Compute connectivity for different measures extracted (~1sec)
 # tracks="${dmri_dir}/tracks_${streamlines}.tck"
 endpoints="${dmri_dir}/tracks_${streamlines}_endpoints.tck"
-sift_weights="${dmri_dir}/sift_weights.txt"
-streamline_length="${dmri_dir}/streamline_metric_length.txt"
-streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.txt"
+sift_weights="${dmri_dir}/sift_weights.npy"
+streamline_length="${dmri_dir}/streamline_metric_length.npy"
+streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.npy"
 # streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
 # streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
 # streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
