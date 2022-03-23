@@ -47,8 +47,9 @@ subcortical_atlas_file="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instan
 echo -e "${GREEN}[INFO]${NC} `date`: Starting structural connectivity mapping for: ${ukb_subject_id}_${ukb_instance} on (cortical: ${cortical_atlas_name}, subcortical: ${subcortical_atlas_name}) atlases."
 
 # Transform atlases to dwi space (~1sec)
-cortical_atlas_dwi="${dmri_dir}/atlases/native.dMRI_space.${cortical_atlas_name}.nii.gz"
+cortical_atlas_dwi="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/atlases/native.dMRI_space.${cortical_atlas_name}.nii.gz"
 transform_DWI_T1="${dmri_dir}/diff2struct_mrtrix.txt"
+mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/atlases"
 if [ ! -f ${cortical_atlas_dwi} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Transforming atlases to dMRI space"
     mkdir -p "${dmri_dir}/atlases/"
@@ -56,7 +57,7 @@ if [ ! -f ${cortical_atlas_dwi} ]; then
     ${mrtrix_dir}/mrtransform "${cortical_atlas_file}" "${cortical_atlas_dwi}" -linear "${transform_DWI_T1}" -inverse \
                 -datatype uint32 ${threading} -info
 fi
-subcortical_atlas_dwi="${dmri_dir}/atlases/native.dMRI_space.${subcortical_atlas_name}.nii.gz"
+subcortical_atlas_dwi="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/atlases/native.dMRI_space.${subcortical_atlas_name}.nii.gz"
 if [ ! -f ${subcortical_atlas_dwi} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Transforming atlases to dMRI space"
     # nearest neighbor mapping as we aim to combine two atlases (see issue #19)
@@ -75,28 +76,27 @@ fi
 # Compute connectivity for different measures extracted (~1sec)
 # tracks="${dmri_dir}/tracks_${streamlines}.tck"
 endpoints="${dmri_dir}/tracks_${streamlines}_endpoints.tck"
-sift_weights="${dmri_dir}/sift_weights.npy"
-streamline_length="${dmri_dir}/streamline_metric_length.npy"
-streamline_mean_fa="${dmri_dir}/streamline_metric_FA_mean.npy"
-# streamline_mean_md="${dmri_dir}/streamline_metric_MD_mean.txt"
-# streamline_mean_mo="${dmri_dir}/streamline_metric_MO_mean.txt"
-# streamline_mean_s0="${dmri_dir}/streamline_metric_S0_mean.txt"
-# streamline_mean_icvf="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.txt"
-# streamline_mean_isovf="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.txt"
-# streamline_mean_od="${dmri_dir}/streamline_metric_NODDI_OD_mean.txt"
-streamline_count="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.csv"
-sift2_fbc="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.csv"
-mean_length="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.csv"
-mean_fa="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.csv"
-# mean_md="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
-# mean_mo="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
-# mean_s0="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
-# mean_icvf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
-# mean_isovf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
-# mean_od="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
+sift_weights="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/sift_weights.npy"
+streamline_length="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_length.npy"
+streamline_mean_fa="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_FA_mean.npy"
+# streamline_mean_md="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_MD_mean.txt"
+# streamline_mean_mo="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_MO_mean.txt"
+# streamline_mean_s0="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_S0_mean.txt"
+# streamline_mean_icvf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ICVF_mean.txt"
+# streamline_mean_isovf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ISOVF_mean.txt"
+# streamline_mean_od="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_OD_mean.txt"
+streamline_count="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.csv"
+sift2_fbc="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.csv"
+mean_length="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.csv"
+mean_fa="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.csv"
+# mean_md="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
+# mean_mo="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
+# mean_s0="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
+# mean_icvf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
+# mean_isovf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
+# mean_od="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
+mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/"
 if [ ! -f ${streamline_count} ]; then
-    mkdir -p "${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/"
-
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from streamline count"
     ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 \
     		       "${endpoints}" "${combined_atlas_dwi}" "${streamline_count}"
