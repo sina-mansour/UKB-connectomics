@@ -195,7 +195,8 @@ fi
 # testing with a smaller value: for 100K seeds, it took ~70sec, see below:
 # tckgen: [100%]   100000 seeds,    44305 streamlines,    17317 selected
 tracks="${dmri_dir}/tracks_${streamlines}.tck"
-trackstats="${dmri_dir}/tracks_${streamlines}_stats.json"
+trackstats="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/stats/tracks_${streamlines}_stats.json"
+mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/stats"
 if [ ! -f ${tracks} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running probabilistic tractography"
     ${mrtrix_dir}/tckgen -seed_gmwmi "${gmwm_seed}" -act "${freesurfer_5tt}" -seeds "${streamlines}" \
@@ -218,7 +219,7 @@ sift_weights="${dmri_dir}/sift_weights.txt"
 if [ ! -f ${sift_weights} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Running SIFT2"
     ${mrtrix_dir}/tcksift2 ${threading} -info "${tracks}" -act "${freesurfer_5tt}" \
-                           -csv "${dmri_dir}/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
+                           -csv "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/stats/sift_stats.csv" "${wm_fod_norm}" "${sift_weights}"
 fi
 
 # diffusion tensor metrics computed from provided images
@@ -264,16 +265,18 @@ if [ ! -f ${streamline_mean_fa} ]; then
 fi
 
 # Convert to float16 NPY binaries (~15sec)
-streamline_length_npy="${dmri_dir}/streamline_metric_length.npy"
-streamline_mean_fa_npy="${dmri_dir}/streamline_metric_FA_mean.npy"
-streamline_mean_md_npy="${dmri_dir}/streamline_metric_1000xMD_mean.npy"
-streamline_mean_mo_npy="${dmri_dir}/streamline_metric_MO_mean.npy"
-streamline_mean_s0_npy="${dmri_dir}/streamline_metric_0.001xS0_mean.npy"
-streamline_mean_icvf_npy="${dmri_dir}/streamline_metric_NODDI_ICVF_mean.npy"
-streamline_mean_isovf_npy="${dmri_dir}/streamline_metric_NODDI_ISOVF_mean.npy"
-streamline_mean_od_npy="${dmri_dir}/streamline_metric_NODDI_OD_mean.npy"
-sift_weights_npy="${dmri_dir}/sift_weights.npy"
-endpoints_npy="${dmri_dir}/tracks_${streamlines}_endpoints.npy"
+streamline_length_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_length.npy"
+streamline_mean_fa_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_FA_mean.npy"
+streamline_mean_md_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_1000xMD_mean.npy"
+streamline_mean_mo_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_MO_mean.npy"
+streamline_mean_s0_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_0.001xS0_mean.npy"
+streamline_mean_icvf_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ICVF_mean.npy"
+streamline_mean_isovf_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ISOVF_mean.npy"
+streamline_mean_od_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_OD_mean.npy"
+sift_weights_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/sift_weights.npy"
+endpoints_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/endpoints/tracks_${streamlines}_endpoints.npy"
+mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics"
+mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/endpoints"
 if [ ! -f ${streamline_mean_fa_npy} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Converting to .npy binaries (float16)"
     python3 "${script_dir}/python/save_metric_as_npy.py" "${streamline_length}" "${streamline_length_npy}" 1
