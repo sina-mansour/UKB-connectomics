@@ -106,12 +106,14 @@ if [ ! -f ${streamline_count} ]; then
                    "${sift_weights}" "${endpoints}" "${combined_atlas_dwi}" "${sift2_fbc}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean fiber length"
-    ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
-                   "${streamline_length}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_length}"
+    ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${sift_weights}" -scale_file "${streamline_length}" -stat_edge mean \
+                   "${endpoints}" "${combined_atlas_dwi}" "${mean_length}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from fractional anisotropy (FA)"
-    ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
-                   "${streamline_mean_fa}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_fa}"
+    ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
+                   "${sift_weights}" -scale_file "${streamline_mean_fa}" -stat_edge mean \
+                   "${endpoints}" "${combined_atlas_dwi}" "${mean_fa}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean diffusivity (MD)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
