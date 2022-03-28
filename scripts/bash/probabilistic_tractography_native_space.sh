@@ -40,6 +40,8 @@ threading="-nthreads 0"
 
 echo -e "${GREEN}[INFO]${NC} `date`: Starting tractography for: ${ukb_subject_id}_${ukb_instance}"
 
+cd "${dmri_dir}"
+
 # Create a temporary directory to store files
 tractography_dir="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography"
 if [ ! -d "${tractography_dir}" ]; then
