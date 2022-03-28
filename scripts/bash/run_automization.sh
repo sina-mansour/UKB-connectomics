@@ -7,7 +7,7 @@
 # Usage: run_automization.sh ...
 #
 
-# module intelpython/3.6.8-2019.2.066
+# module load intelpython/3.6.8-2019.2.066
 # source venv/bin/activate
 
 # some colors for fancy logging :D
