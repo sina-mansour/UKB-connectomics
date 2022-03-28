@@ -33,6 +33,7 @@ NC='\033[0m'
 
 # read the arguments
 index=$1
+extra=$2
 
 # change directory to scripts directory
 code_dir="/data/gpfs/projects/punim1566/UKB-connectomics"
@@ -43,7 +44,7 @@ data_dir="/data/scratch/projects/punim1566/UKB-download"
 cd ${code_dir}
 
 # run the automation command
-"${code_dir}/scripts/bash/UKB_connectivity_mapping_pipeline.sh" "${code_dir}" "${data_dir}" "${index}"
+"${code_dir}/scripts/bash/UKB_connectivity_mapping_pipeline.sh" "${code_dir}" "${data_dir}" "${index}" "${extra}"
 
 echo -e "${GREEN}[INFO]${NC} `date`: Script finished!"
 
