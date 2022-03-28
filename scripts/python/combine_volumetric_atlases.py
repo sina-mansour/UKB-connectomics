@@ -57,8 +57,8 @@ if __name__ == '__main__':
     )
 
     # load native atlases
-    atlas_1 = f'{ukb_subjects_dir}/{ukb_subject_id}_{ukb_instance}/dMRI/dMRI/atlases/native.dMRI_space.{atlas_1_name}.nii.gz'
-    atlas_2 = f'{ukb_subjects_dir}/{ukb_subject_id}_{ukb_instance}/dMRI/dMRI/atlases/native.dMRI_space.{atlas_2_name}.nii.gz'
+    atlas_1 = f'{temporary_dir}/subjects/{ukb_subject_id}_{ukb_instance}/tractography/atlases/native.dMRI_space.{atlas_1_name}.nii.gz'
+    atlas_2 = f'{temporary_dir}/subjects/{ukb_subject_id}_{ukb_instance}/tractography/atlases/native.dMRI_space.{atlas_2_name}.nii.gz'
     atlas_1_image = nib.as_closest_canonical(nib.load(atlas_1))
     atlas_2_image = nib.as_closest_canonical(nib.load(atlas_2))
 

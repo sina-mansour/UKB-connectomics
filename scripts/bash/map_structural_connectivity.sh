@@ -52,7 +52,6 @@ transform_DWI_T1="${dmri_dir}/diff2struct_mrtrix.txt"
 mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/atlases"
 if [ ! -f ${cortical_atlas_dwi} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Transforming atlases to dMRI space"
-    mkdir -p "${dmri_dir}/atlases/"
     # no need for nearest neighbor given rigid transformation (see issue #19)
     ${mrtrix_dir}/mrtransform "${cortical_atlas_file}" "${cortical_atlas_dwi}" -linear "${transform_DWI_T1}" -inverse \
                 -datatype uint32 ${threading} -info
@@ -67,6 +66,7 @@ fi
 
 # Combine atlases together
 combined_atlas_dwi="${dmri_dir}/atlases/combinations/native.dMRI_space.${cortical_atlas_name}+${subcortical_atlas_name}.nii.gz"
+mkdir -p "${dmri_dir}/atlases/"
 if [ ! -f ${combined_atlas_dwi} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Combining the cortical and subcortical atlases in dMRI space"
     # nearest neighbor mapping as we aim to combine two atlases (see issue #19)
