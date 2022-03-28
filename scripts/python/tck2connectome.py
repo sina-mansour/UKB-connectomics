@@ -69,4 +69,4 @@ if __name__ == '__main__':
     adj[np.diag_indices_from(adj)] /= 2
 
     # store connectome in a csv file
-    np.savetxt(output_file, adj, delimiter=',')
+    np.savetxt(output_file, adj.astype(np.int32), delimiter=',', fmt="%d")
