@@ -85,59 +85,80 @@ streamline_mean_fa="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/
 # streamline_mean_icvf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ICVF_mean.txt"
 # streamline_mean_isovf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_ISOVF_mean.txt"
 # streamline_mean_od="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/metrics/streamline_metric_NODDI_OD_mean.txt"
-streamline_count="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.csv"
-sift2_fbc="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.csv"
-mean_length="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.csv"
-mean_fa="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.csv"
-# mean_md="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
-# mean_mo="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
-# mean_s0="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
-# mean_icvf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
-# mean_isovf="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
-# mean_od="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
+streamline_count="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.csv"
+streamline_count_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_streamline_count_${streamlines}.npy"
+sift2_fbc="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.csv"
+sift2_fbc_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_sift2_fbc_${streamlines}.npy"
+mean_length="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.csv"
+mean_length_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_length_${streamlines}.npy"
+mean_fa="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.csv"
+mean_fa_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_FA_${streamlines}.npy"
+# mean_md="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.csv"
+# mean_md_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MD_${streamlines}.npy"
+# mean_mo="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.csv"
+# mean_mo_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_MO_${streamlines}.npy"
+# mean_s0="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.csv"
+# mean_s0_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_S0_${streamlines}.npy"
+# mean_icvf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.csv"
+# mean_icvf_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ICVF_${streamlines}.npy"
+# mean_isovf="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.csv"
+# mean_isovf_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_ISOVF_${streamlines}.npy"
+# mean_od="${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.csv"
+# mean_od_npy="${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/connectome_mean_NODDI_OD_${streamlines}.npy"
+mkdir -p "${dmri_dir}/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/"
 mkdir -p "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/tractography/connectomes/${cortical_atlas_name}+${subcortical_atlas_name}/"
 if [ ! -f ${streamline_count} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from streamline count"
     ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 \
     		       "${endpoints}" "${combined_atlas_dwi}" "${streamline_count}"
+    python3 "${script_dir}/python/save_csv_as_npy.py" "${streamline_count}" "${streamline_count_npy}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from SIFT2 Fiber Bundle Capacity (FBC)"
     ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
                    "${sift_weights}" "${endpoints}" "${combined_atlas_dwi}" "${sift2_fbc}"
+    python3 "${script_dir}/python/save_csv_as_npy.py" "${sift2_fbc}" "${sift2_fbc_npy}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean fiber length"
     ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
                    "${sift_weights}" -scale_file "${streamline_length}" -stat_edge mean \
                    "${endpoints}" "${combined_atlas_dwi}" "${mean_length}"
+    python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_length}" "${mean_length_npy}"
                    
     echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from fractional anisotropy (FA)"
     ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -tck_weights_in \
                    "${sift_weights}" -scale_file "${streamline_mean_fa}" -stat_edge mean \
                    "${endpoints}" "${combined_atlas_dwi}" "${mean_fa}"
+    python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_fa}" "${mean_fa_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mean diffusivity (MD)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_md}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_md}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_md}" "${mean_md_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from mode of the anisotropy (MO)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_mo}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_mo}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_mo}" "${mean_mo_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from raw T2 signal (S0)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_s0}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_s0}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_s0}" "${mean_s0_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI intra-cellular volume fraction (NODDI_ICVF)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_icvf}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_icvf}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_icvf}" "${mean_icvf_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI isotropic volume fraction (NODDI_ISOVF)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_isovf}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_isovf}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_isovf}" "${mean_isovf_npy}"
                    
     # echo -e "${GREEN}[INFO]${NC} `date`: Computing connectomes from NODDI orientation dispersion index (NODDI_OD)"
     # ${mrtrix_dir}/tck2connectome ${threading} -info -symmetric -assignment_radial_search 4 -scale_file \
     #                "${streamline_mean_od}" -stat_edge mean "${endpoints}" "${combined_atlas_dwi}" "${mean_od}"
+    # python3 "${script_dir}/python/save_csv_as_npy.py" "${mean_od}" "${mean_od_npy}"
 fi
 
 echo -e "${GREEN}[INFO]${NC} `date`: Finished structural connectivity mapping for: ${ukb_subject_id}_${ukb_instance} on ${atlas_name}"
