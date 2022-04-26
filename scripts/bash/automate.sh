@@ -37,9 +37,13 @@ extra=$2
 
 # change directory to scripts directory
 code_dir="/data/gpfs/projects/punim1566/UKB-connectomics"
+# select where to store temporary files
 # data_dir="/data/gpfs/projects/punim1566/UKB-download"
 # instead, download to scratch space
-data_dir="/data/scratch/projects/punim1566/UKB-download"
+# data_dir="/data/scratch/projects/punim1566/UKB-download"
+# instead, use the ram disk storage space
+data_dir="/dev/shm/UKB-download"
+mkdir -p ${data_dir}
 
 cd ${code_dir}
 

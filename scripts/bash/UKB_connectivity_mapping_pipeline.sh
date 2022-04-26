@@ -287,6 +287,7 @@ streamlines="10M"
 echo -e "${GREEN}[INFO]`date`:${NC} Mapping structural connectomes from tractography outputs."
 
 # Step 2: map connectivity on combined cortical + subcortical atlases
+
 for atlas_combination in ${selected_atlas_combinations[@]}; do
 	IFS=',' read -a atlas_combination_info <<< "${atlas_combination}"
 	cortical_atlas_name=${atlas_combination_info[0]}
