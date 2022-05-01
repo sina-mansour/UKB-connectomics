@@ -106,7 +106,7 @@ selected_atlas_combinations=(
 )
 
 # --------------------------------------------------------------------------------
-# Download subject data
+# Download subject data and extract previous computations
 # --------------------------------------------------------------------------------
 
 # read the subject information from the combined bulk file
@@ -117,6 +117,17 @@ ukb_instance=${subject_instance[1]}
 
 # execute download script
 "${script_dir}/bash/download_subject_data.sh" "${main_dir}" "${ukb_subjects_dir}" "${ukb_subject_id}" "${ukb_instance}" "${working_dir}"
+
+# extract previous archived computations
+# Atlases and transforms
+unzip -n "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_atlases_${ukb_instance}.zip" \
+	  -d "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/"
+# Functional MRI data
+unzip -n "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_fMRI_${ukb_instance}.zip" \
+	  -d "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/"
+# Tractography data
+unzip -n "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_tractography_${ukb_instance}.zip" \
+	  -d "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/"
 
 cd "${working_dir}"
 
@@ -302,13 +313,27 @@ done
 
 
 # --------------------------------------------------------------------------------
-# Delete unwanted files
+# Compress files into archive and delete unwanted files
 # --------------------------------------------------------------------------------
 
-# for now, we'll just delete all downloaded files as the downloads are rather fast
-# from the high performance computing servers
+# Delete all downloaded files as downloading from HPC servers is fast
 if [ -d "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}" ] && [ ${delete_download} == "yes" ]; then
+	echo -e "${GREEN}[INFO]`date`:${NC} Delete downlowded files."
 	rm -r "${ukb_subjects_dir}/${ukb_subject_id}_${ukb_instance}/"
 fi
+
+# Compress final outputs to the output directory
+echo -e "${GREEN}[INFO]`date`:${NC} Compressing computed files and removing the uncompressed ones."
+mkdir -p "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/"
+cd "${temporary_dir}/subjects/${ukb_subject_id}_${ukb_instance}/"
+# Atlases and transforms
+zip -urvTm "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_atlases_${ukb_instance}.zip" \
+		 "./atlases" "./transforms"
+# Functional MRI data
+zip -urvTm "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_fMRI_${ukb_instance}.zip" \
+		 "./fMRI"
+# Tractography data
+zip -urvTm "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_tractography_${ukb_instance}.zip" \
+		 "./tractography"
 
 # deactivate
