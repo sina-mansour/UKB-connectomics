@@ -52,9 +52,16 @@ fi
 dwi_mif="${dmri_dir}/dwi.mif"
 if [ ! -f ${dwi_mif} ]; then
     echo -e "${GREEN}[INFO]${NC} `date`: Converting dwi image to mif"
-    ${mrtrix_dir}/mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
-              -fslgrad "${dmri_dir}/data.eddy_rotated_bvecs" "${dmri_dir}/bvals" \
-              -datatype float32 -strides 0,0,0,1 ${threading} -info
+    # check for eddy rotated bvecs
+    if [ -f "${dmri_dir}/data.eddy_rotated_bvecs" ]; then
+        ${mrtrix_dir}/mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
+                  -fslgrad "${dmri_dir}/data.eddy_rotated_bvecs" "${dmri_dir}/bvals" \
+                  -datatype float32 -strides 0,0,0,1 ${threading} -info
+    else
+        ${mrtrix_dir}/mrconvert "${dmri_dir}/data_ud.nii.gz" "${dwi_mif}" \
+                  -fslgrad "${dmri_dir}/bvecs" "${dmri_dir}/bvals" \
+                  -datatype float32 -strides 0,0,0,1 ${threading} -info
+    fi
 fi
 
 # Then, extract mean B0 image (~1sec)
