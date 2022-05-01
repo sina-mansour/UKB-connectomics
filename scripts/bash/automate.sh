@@ -42,7 +42,9 @@ code_dir="/data/gpfs/projects/punim1566/UKB-connectomics"
 # instead, download to scratch space
 # data_dir="/data/scratch/projects/punim1566/UKB-download"
 # instead, use the ram disk storage space
-data_dir="/dev/shm/UKB-download"
+# data_dir="/dev/shm/UKB-download"
+# instead, use the fast local NVMe storage 
+data_dir="/tmp/UKB-download"
 mkdir -p ${data_dir}
 
 cd ${code_dir}
