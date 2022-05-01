@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=0-08:00:00
-#SBATCH --mem=8G
+#SBATCH --time=0-06:00:00
+#SBATCH --mem=4G
 #SBATCH --partition=physical
 #SBATCH -o /data/gpfs/projects/punim1566/UKB-slurm/slurm_logs/%x_%j.out
 
