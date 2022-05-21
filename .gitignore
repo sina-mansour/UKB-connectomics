@@ -21,3 +21,6 @@ logs/
 
 # ignore temporary scripts
 /scripts/temp/
+
+# sublime workspace
+ukb-connectomics.sublime-workspace
