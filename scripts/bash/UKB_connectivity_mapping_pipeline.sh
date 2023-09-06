@@ -234,7 +234,7 @@ echo -e "${GREEN}[INFO]`date`:${NC} All native volumetric atlases generated."
 
 echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on cortical atlases."
 
-# map all surface atlases to native volume
+# iterate over cortical atlases
 for atlas in ${atlases[@]}; do
 	IFS=',' read -a atlas_info <<< "${atlas}"
 	atlas_name=${atlas_info[0]}
@@ -253,7 +253,7 @@ done
 
 echo -e "${GREEN}[INFO]`date`:${NC} Mapping fMRI on subcortical atlases."
 
-# map all surface atlases to native volume
+# iterate over subortical atlases
 for atlas in ${subcortical_atlases[@]}; do
 	IFS=',' read -a atlas_info <<< "${atlas}"
 	atlas_name=${atlas_info[0]}
