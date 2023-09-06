@@ -20,7 +20,7 @@ Welcome to the UK Biobank Connectomes repository, a resource for the "Connectome
 - A complete pipeline to map individual parcellations, functional time series, and structural connectomes for a single imaging session, implemented as an embarrassingly parallel workload. [Access the pipeline script](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/UKB_connectivity_mapping_pipeline.sh).
 
 ### Tractography Pipeline
-- Inspect the tractography pipeline script: [Tractography Script](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/probabilistic_tractography_native_space.sh).
+- Inspect the tractography pipeline script: [Tractography Script](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/probabilistic_tractography_native_space.sh). Note that you can use the exact same version of MRtrix3 as used by our pipeline by building the source code as detailed [here](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/mrtrix_installation.sh).
 
 ### Connectivity matrices from streamlines
 - A collection of [bash](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/map_structural_connectivity.sh), [Matlab](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/matlab/tck2connectome.m), and [Python](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/python/tck2connectome.py) scripts for generating approximately 1000 alternative connectomes using various parcellations and connectivity metrics, complementing the pre-computed connectomes.
