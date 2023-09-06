@@ -33,4 +33,4 @@ Welcome to the UK Biobank Connectomes repository, a resource for the "Connectome
 
 Feel free to explore and utilize these resources for your research projects. If you have any questions or need assistance, please don't hesitate to reach out.
 
-[![sina \[dot\] mansour \[dot\] lakouraj \[at\] gmail](https://img.shields.io/badge/Contact-Sina.M.L-blue)](https://sina-mansour.github.io/)
+[![sina \[dot\] mansour \[dot\] lakouraj \[at\] gmail](https://img.shields.io/badge/Contact-sina%20[dot]%20mansour%20[dot]%20lakouraj%20[at]%20gmail-blue)](https://sina-mansour.github.io/)
