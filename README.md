@@ -31,6 +31,22 @@ Welcome to the UK Biobank Connectomes repository, a resource for the "Connectome
 
 ---
 
+### Software dependencies:
+
+The connectivity mapping pipeline makes use of the following software packages:
+
+- [**FreeSurfer**](https://surfer.nmr.mgh.harvard.edu/fswiki/FreeSurfer): version 7.1.1
+- [**FSL**](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki): version 6.0.3
+- [**MRtrix3**](https://www.mrtrix.org/): Built from source ([commit `eeab681`](https://github.com/MRtrix3/mrtrix3/commit/eeab681), see [this](https://github.com/sina-mansour/UKB-connectomics/blob/main/scripts/bash/mrtrix_installation.sh))
+
+The following Python packages were additionally utilized:
+- [**NumPy**](https://numpy.org/)
+- [**SciPy**](https://scipy.org/)
+- [**Pandas**](https://pandas.pydata.org/)
+- [**NiBabel**](https://nipy.org/nibabel/gettingstarted.html)
+
+---
+
 Feel free to explore and utilize these resources for your research projects. If you have any questions or need assistance, please don't hesitate to reach out.
 
 [![sina \[dot\] mansour \[dot\] lakouraj \[at\] gmail](https://img.shields.io/badge/Contact-sina%20[dot]%20mansour%20[dot]%20lakouraj%20[at]%20gmail-blue)](https://sina-mansour.github.io/)
