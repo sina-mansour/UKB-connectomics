@@ -33,15 +33,4 @@ Welcome to the UK Biobank Connectomes repository, a resource for the "Connectome
 
 Feel free to explore and utilize these resources for your research projects. If you have any questions or need assistance, please don't hesitate to reach out.
 
-<form action="https://formspree.io/sina.mansour.lakouraj@gmail.com" method="POST">
-  <label for="name">Name:</label>
-  <input type="text" name="name" required><br>
-
-  <label for="email">Email:</label>
-  <input type="email" name="_replyto" required><br>
-
-  <label for="message">Message:</label>
-  <textarea name="message" rows="4" required></textarea><br>
-
-  <input type="submit" value="Submit">
-</form>
+[![sina \[dot\] mansour \[dot\] lakouraj \[at\] gmail](https://img.shields.io/badge/Contact-Sina.M.L-blue)](https://sina-mansour.github.io/)
