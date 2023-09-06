@@ -29,7 +29,7 @@ start_index=$1
 end_index=$(($2 + 1))
 
 main_dir=$3
-ukb_subjects_dir=$4
+zip_file=$4 # tractography
 required_file_list=$5
 
 temporary_dir="${main_dir}/data/temporary"
@@ -49,20 +49,19 @@ do
         ukb_subject_id=${subject_instance[0]}
         ukb_instance=${subject_instance[1]}
 
-        echo -e "${GREEN}[INFO]${NC} `date`: Instance info: ${subject_instance}"
+        echo -e "${GREEN}[INFO]${NC} `date`: Instance info: ${ukb_subject_id}_${ukb_instance}"
 
         # Check if required files are present
         needs_running=false
 
 
-        files=(`${required_file_list} ${main_dir} ${ukb_subjects_dir} ${ukb_subject_id} ${ukb_instance}`)
+        files=(`${required_file_list}`)
 
         # check existence of all files
         for file in ${files[@]}; do
                 # check if file exists in the compressed folder
-                # if [ ! -f "${file}" ]; then
-                if [[ ! `unzip -Z1 "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_atlases_${ukb_instance}.zip" | grep -w atlases/rh.native.Glasser.annot` ]]; then
-                        echo -e "${GREEN}[INFO]${NC} File missing: ${file}"
+                if [[ ! `unzip -Z1 "${output_dir}/subjects/${ukb_subject_id}_${ukb_instance}/${ukb_subject_id}_${zip_file}_${ukb_instance}.zip" | grep -w ${file}` ]]; then
+                        echo -e "${RED}[INFO]${NC} File missing: ${file}"
                         needs_running=true
                         break
                 fi
