@@ -29,7 +29,8 @@ git clone https://github.com/MRtrix3/mrtrix3.git
 # configuration
 echo -e "${GREEN}[INFO]${NC} `date`: Configuring the ukb release"
 cd mrtrix3
-git checkout ukb
+# git checkout ukb
+git checkout eeab681d3e0cb004cf1d1d31579d3892197ef5b6  # see https://github.com/sina-mansour/UKB-connectomics/issues/38
 ./configure
 # on spartan:
 # ./configure -static -nogui
