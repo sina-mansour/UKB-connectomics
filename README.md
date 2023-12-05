@@ -47,6 +47,15 @@ The following Python packages were additionally utilized:
 
 ---
 
+## FAQ
+
+Here you may find information about commonly raised questions about the resource:
+
+1. *How do I get region labels for various SC and FC matrices:*
+   Region labels are provided in [/data/templates/atlases/labels](https://github.com/sina-mansour/UKB-connectomics/tree/main/data/templates/atlases/labels), also check out [this issue](https://github.com/sina-mansour/UKB-connectomics/issues/41) for further information.
+
+---
+
 Feel free to explore and utilize these resources for your research projects. If you have any questions or need assistance, please don't hesitate to reach out.
 
 [![sina \[dot\] mansour \[dot\] lakouraj \[at\] gmail](https://img.shields.io/badge/Contact-sina%20[dot]%20mansour%20[dot]%20lakouraj%20[at]%20gmail-blue)](https://sina-mansour.github.io/)
